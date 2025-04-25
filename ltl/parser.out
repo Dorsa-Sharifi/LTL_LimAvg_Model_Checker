@@ -1,0 +1,1038 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> formula
+Rule 1     formula -> atomic
+Rule 2     formula -> unary_op
+Rule 3     formula -> binary_op
+Rule 4     formula -> parens
+Rule 5     atomic -> TRUE
+Rule 6     atomic -> FALSE
+Rule 7     atomic -> PROPOSITION
+Rule 8     unary_op -> NOT formula
+Rule 9     unary_op -> NEXT formula
+Rule 10    unary_op -> EVENTUALLY formula
+Rule 11    unary_op -> ALWAYS formula
+Rule 12    binary_op -> formula AND formula
+Rule 13    binary_op -> formula OR formula
+Rule 14    binary_op -> formula IMPLIES formula
+Rule 15    binary_op -> formula EQUIV formula
+Rule 16    binary_op -> formula UNTIL formula
+Rule 17    binary_op -> formula RELEASE formula
+Rule 18    parens -> LPAREN formula RPAREN
+
+Terminals, with rules where they appear
+
+ALWAYS               : 11
+AND                  : 12
+EQUIV                : 15
+EVENTUALLY           : 10
+FALSE                : 6
+IMPLIES              : 14
+LPAREN               : 18
+NEXT                 : 9
+NOT                  : 8
+OR                   : 13
+PROPOSITION          : 7
+RELEASE              : 17
+RPAREN               : 18
+TRUE                 : 5
+UNTIL                : 16
+error                : 
+
+Nonterminals, with rules where they appear
+
+atomic               : 1
+binary_op            : 3
+formula              : 8 9 10 11 12 12 13 13 14 14 15 15 16 16 17 17 18 0
+parens               : 4
+unary_op             : 2
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . formula
+    (1) formula -> . atomic
+    (2) formula -> . unary_op
+    (3) formula -> . binary_op
+    (4) formula -> . parens
+    (5) atomic -> . TRUE
+    (6) atomic -> . FALSE
+    (7) atomic -> . PROPOSITION
+    (8) unary_op -> . NOT formula
+    (9) unary_op -> . NEXT formula
+    (10) unary_op -> . EVENTUALLY formula
+    (11) unary_op -> . ALWAYS formula
+    (12) binary_op -> . formula AND formula
+    (13) binary_op -> . formula OR formula
+    (14) binary_op -> . formula IMPLIES formula
+    (15) binary_op -> . formula EQUIV formula
+    (16) binary_op -> . formula UNTIL formula
+    (17) binary_op -> . formula RELEASE formula
+    (18) parens -> . LPAREN formula RPAREN
+
+    TRUE            shift and go to state 6
+    FALSE           shift and go to state 7
+    PROPOSITION     shift and go to state 8
+    NOT             shift and go to state 9
+    NEXT            shift and go to state 10
+    EVENTUALLY      shift and go to state 11
+    ALWAYS          shift and go to state 12
+    LPAREN          shift and go to state 13
+
+    formula                        shift and go to state 1
+    atomic                         shift and go to state 2
+    unary_op                       shift and go to state 3
+    binary_op                      shift and go to state 4
+    parens                         shift and go to state 5
+
+state 1
+
+    (0) S' -> formula .
+    (12) binary_op -> formula . AND formula
+    (13) binary_op -> formula . OR formula
+    (14) binary_op -> formula . IMPLIES formula
+    (15) binary_op -> formula . EQUIV formula
+    (16) binary_op -> formula . UNTIL formula
+    (17) binary_op -> formula . RELEASE formula
+
+    AND             shift and go to state 14
+    OR              shift and go to state 15
+    IMPLIES         shift and go to state 16
+    EQUIV           shift and go to state 17
+    UNTIL           shift and go to state 18
+    RELEASE         shift and go to state 19
+
+
+state 2
+
+    (1) formula -> atomic .
+
+    AND             reduce using rule 1 (formula -> atomic .)
+    OR              reduce using rule 1 (formula -> atomic .)
+    IMPLIES         reduce using rule 1 (formula -> atomic .)
+    EQUIV           reduce using rule 1 (formula -> atomic .)
+    UNTIL           reduce using rule 1 (formula -> atomic .)
+    RELEASE         reduce using rule 1 (formula -> atomic .)
+    $end            reduce using rule 1 (formula -> atomic .)
+    RPAREN          reduce using rule 1 (formula -> atomic .)
+
+
+state 3
+
+    (2) formula -> unary_op .
+
+    AND             reduce using rule 2 (formula -> unary_op .)
+    OR              reduce using rule 2 (formula -> unary_op .)
+    IMPLIES         reduce using rule 2 (formula -> unary_op .)
+    EQUIV           reduce using rule 2 (formula -> unary_op .)
+    UNTIL           reduce using rule 2 (formula -> unary_op .)
+    RELEASE         reduce using rule 2 (formula -> unary_op .)
+    $end            reduce using rule 2 (formula -> unary_op .)
+    RPAREN          reduce using rule 2 (formula -> unary_op .)
+
+
+state 4
+
+    (3) formula -> binary_op .
+
+    AND             reduce using rule 3 (formula -> binary_op .)
+    OR              reduce using rule 3 (formula -> binary_op .)
+    IMPLIES         reduce using rule 3 (formula -> binary_op .)
+    EQUIV           reduce using rule 3 (formula -> binary_op .)
+    UNTIL           reduce using rule 3 (formula -> binary_op .)
+    RELEASE         reduce using rule 3 (formula -> binary_op .)
+    $end            reduce using rule 3 (formula -> binary_op .)
+    RPAREN          reduce using rule 3 (formula -> binary_op .)
+
+
+state 5
+
+    (4) formula -> parens .
+
+    AND             reduce using rule 4 (formula -> parens .)
+    OR              reduce using rule 4 (formula -> parens .)
+    IMPLIES         reduce using rule 4 (formula -> parens .)
+    EQUIV           reduce using rule 4 (formula -> parens .)
+    UNTIL           reduce using rule 4 (formula -> parens .)
+    RELEASE         reduce using rule 4 (formula -> parens .)
+    $end            reduce using rule 4 (formula -> parens .)
+    RPAREN          reduce using rule 4 (formula -> parens .)
+
+
+state 6
+
+    (5) atomic -> TRUE .
+
+    AND             reduce using rule 5 (atomic -> TRUE .)
+    OR              reduce using rule 5 (atomic -> TRUE .)
+    IMPLIES         reduce using rule 5 (atomic -> TRUE .)
+    EQUIV           reduce using rule 5 (atomic -> TRUE .)
+    UNTIL           reduce using rule 5 (atomic -> TRUE .)
+    RELEASE         reduce using rule 5 (atomic -> TRUE .)
+    $end            reduce using rule 5 (atomic -> TRUE .)
+    RPAREN          reduce using rule 5 (atomic -> TRUE .)
+
+
+state 7
+
+    (6) atomic -> FALSE .
+
+    AND             reduce using rule 6 (atomic -> FALSE .)
+    OR              reduce using rule 6 (atomic -> FALSE .)
+    IMPLIES         reduce using rule 6 (atomic -> FALSE .)
+    EQUIV           reduce using rule 6 (atomic -> FALSE .)
+    UNTIL           reduce using rule 6 (atomic -> FALSE .)
+    RELEASE         reduce using rule 6 (atomic -> FALSE .)
+    $end            reduce using rule 6 (atomic -> FALSE .)
+    RPAREN          reduce using rule 6 (atomic -> FALSE .)
+
+
+state 8
+
+    (7) atomic -> PROPOSITION .
+
+    AND             reduce using rule 7 (atomic -> PROPOSITION .)
+    OR              reduce using rule 7 (atomic -> PROPOSITION .)
+    IMPLIES         reduce using rule 7 (atomic -> PROPOSITION .)
+    EQUIV           reduce using rule 7 (atomic -> PROPOSITION .)
+    UNTIL           reduce using rule 7 (atomic -> PROPOSITION .)
+    RELEASE         reduce using rule 7 (atomic -> PROPOSITION .)
+    $end            reduce using rule 7 (atomic -> PROPOSITION .)
+    RPAREN          reduce using rule 7 (atomic -> PROPOSITION .)
+
+
+state 9
+
+    (8) unary_op -> NOT . formula
+    (1) formula -> . atomic
+    (2) formula -> . unary_op
+    (3) formula -> . binary_op
+    (4) formula -> . parens
+    (5) atomic -> . TRUE
+    (6) atomic -> . FALSE
+    (7) atomic -> . PROPOSITION
+    (8) unary_op -> . NOT formula
+    (9) unary_op -> . NEXT formula
+    (10) unary_op -> . EVENTUALLY formula
+    (11) unary_op -> . ALWAYS formula
+    (12) binary_op -> . formula AND formula
+    (13) binary_op -> . formula OR formula
+    (14) binary_op -> . formula IMPLIES formula
+    (15) binary_op -> . formula EQUIV formula
+    (16) binary_op -> . formula UNTIL formula
+    (17) binary_op -> . formula RELEASE formula
+    (18) parens -> . LPAREN formula RPAREN
+
+    TRUE            shift and go to state 6
+    FALSE           shift and go to state 7
+    PROPOSITION     shift and go to state 8
+    NOT             shift and go to state 9
+    NEXT            shift and go to state 10
+    EVENTUALLY      shift and go to state 11
+    ALWAYS          shift and go to state 12
+    LPAREN          shift and go to state 13
+
+    formula                        shift and go to state 20
+    atomic                         shift and go to state 2
+    unary_op                       shift and go to state 3
+    binary_op                      shift and go to state 4
+    parens                         shift and go to state 5
+
+state 10
+
+    (9) unary_op -> NEXT . formula
+    (1) formula -> . atomic
+    (2) formula -> . unary_op
+    (3) formula -> . binary_op
+    (4) formula -> . parens
+    (5) atomic -> . TRUE
+    (6) atomic -> . FALSE
+    (7) atomic -> . PROPOSITION
+    (8) unary_op -> . NOT formula
+    (9) unary_op -> . NEXT formula
+    (10) unary_op -> . EVENTUALLY formula
+    (11) unary_op -> . ALWAYS formula
+    (12) binary_op -> . formula AND formula
+    (13) binary_op -> . formula OR formula
+    (14) binary_op -> . formula IMPLIES formula
+    (15) binary_op -> . formula EQUIV formula
+    (16) binary_op -> . formula UNTIL formula
+    (17) binary_op -> . formula RELEASE formula
+    (18) parens -> . LPAREN formula RPAREN
+
+    TRUE            shift and go to state 6
+    FALSE           shift and go to state 7
+    PROPOSITION     shift and go to state 8
+    NOT             shift and go to state 9
+    NEXT            shift and go to state 10
+    EVENTUALLY      shift and go to state 11
+    ALWAYS          shift and go to state 12
+    LPAREN          shift and go to state 13
+
+    formula                        shift and go to state 21
+    atomic                         shift and go to state 2
+    unary_op                       shift and go to state 3
+    binary_op                      shift and go to state 4
+    parens                         shift and go to state 5
+
+state 11
+
+    (10) unary_op -> EVENTUALLY . formula
+    (1) formula -> . atomic
+    (2) formula -> . unary_op
+    (3) formula -> . binary_op
+    (4) formula -> . parens
+    (5) atomic -> . TRUE
+    (6) atomic -> . FALSE
+    (7) atomic -> . PROPOSITION
+    (8) unary_op -> . NOT formula
+    (9) unary_op -> . NEXT formula
+    (10) unary_op -> . EVENTUALLY formula
+    (11) unary_op -> . ALWAYS formula
+    (12) binary_op -> . formula AND formula
+    (13) binary_op -> . formula OR formula
+    (14) binary_op -> . formula IMPLIES formula
+    (15) binary_op -> . formula EQUIV formula
+    (16) binary_op -> . formula UNTIL formula
+    (17) binary_op -> . formula RELEASE formula
+    (18) parens -> . LPAREN formula RPAREN
+
+    TRUE            shift and go to state 6
+    FALSE           shift and go to state 7
+    PROPOSITION     shift and go to state 8
+    NOT             shift and go to state 9
+    NEXT            shift and go to state 10
+    EVENTUALLY      shift and go to state 11
+    ALWAYS          shift and go to state 12
+    LPAREN          shift and go to state 13
+
+    formula                        shift and go to state 22
+    atomic                         shift and go to state 2
+    unary_op                       shift and go to state 3
+    binary_op                      shift and go to state 4
+    parens                         shift and go to state 5
+
+state 12
+
+    (11) unary_op -> ALWAYS . formula
+    (1) formula -> . atomic
+    (2) formula -> . unary_op
+    (3) formula -> . binary_op
+    (4) formula -> . parens
+    (5) atomic -> . TRUE
+    (6) atomic -> . FALSE
+    (7) atomic -> . PROPOSITION
+    (8) unary_op -> . NOT formula
+    (9) unary_op -> . NEXT formula
+    (10) unary_op -> . EVENTUALLY formula
+    (11) unary_op -> . ALWAYS formula
+    (12) binary_op -> . formula AND formula
+    (13) binary_op -> . formula OR formula
+    (14) binary_op -> . formula IMPLIES formula
+    (15) binary_op -> . formula EQUIV formula
+    (16) binary_op -> . formula UNTIL formula
+    (17) binary_op -> . formula RELEASE formula
+    (18) parens -> . LPAREN formula RPAREN
+
+    TRUE            shift and go to state 6
+    FALSE           shift and go to state 7
+    PROPOSITION     shift and go to state 8
+    NOT             shift and go to state 9
+    NEXT            shift and go to state 10
+    EVENTUALLY      shift and go to state 11
+    ALWAYS          shift and go to state 12
+    LPAREN          shift and go to state 13
+
+    formula                        shift and go to state 23
+    atomic                         shift and go to state 2
+    unary_op                       shift and go to state 3
+    binary_op                      shift and go to state 4
+    parens                         shift and go to state 5
+
+state 13
+
+    (18) parens -> LPAREN . formula RPAREN
+    (1) formula -> . atomic
+    (2) formula -> . unary_op
+    (3) formula -> . binary_op
+    (4) formula -> . parens
+    (5) atomic -> . TRUE
+    (6) atomic -> . FALSE
+    (7) atomic -> . PROPOSITION
+    (8) unary_op -> . NOT formula
+    (9) unary_op -> . NEXT formula
+    (10) unary_op -> . EVENTUALLY formula
+    (11) unary_op -> . ALWAYS formula
+    (12) binary_op -> . formula AND formula
+    (13) binary_op -> . formula OR formula
+    (14) binary_op -> . formula IMPLIES formula
+    (15) binary_op -> . formula EQUIV formula
+    (16) binary_op -> . formula UNTIL formula
+    (17) binary_op -> . formula RELEASE formula
+    (18) parens -> . LPAREN formula RPAREN
+
+    TRUE            shift and go to state 6
+    FALSE           shift and go to state 7
+    PROPOSITION     shift and go to state 8
+    NOT             shift and go to state 9
+    NEXT            shift and go to state 10
+    EVENTUALLY      shift and go to state 11
+    ALWAYS          shift and go to state 12
+    LPAREN          shift and go to state 13
+
+    formula                        shift and go to state 24
+    atomic                         shift and go to state 2
+    unary_op                       shift and go to state 3
+    binary_op                      shift and go to state 4
+    parens                         shift and go to state 5
+
+state 14
+
+    (12) binary_op -> formula AND . formula
+    (1) formula -> . atomic
+    (2) formula -> . unary_op
+    (3) formula -> . binary_op
+    (4) formula -> . parens
+    (5) atomic -> . TRUE
+    (6) atomic -> . FALSE
+    (7) atomic -> . PROPOSITION
+    (8) unary_op -> . NOT formula
+    (9) unary_op -> . NEXT formula
+    (10) unary_op -> . EVENTUALLY formula
+    (11) unary_op -> . ALWAYS formula
+    (12) binary_op -> . formula AND formula
+    (13) binary_op -> . formula OR formula
+    (14) binary_op -> . formula IMPLIES formula
+    (15) binary_op -> . formula EQUIV formula
+    (16) binary_op -> . formula UNTIL formula
+    (17) binary_op -> . formula RELEASE formula
+    (18) parens -> . LPAREN formula RPAREN
+
+    TRUE            shift and go to state 6
+    FALSE           shift and go to state 7
+    PROPOSITION     shift and go to state 8
+    NOT             shift and go to state 9
+    NEXT            shift and go to state 10
+    EVENTUALLY      shift and go to state 11
+    ALWAYS          shift and go to state 12
+    LPAREN          shift and go to state 13
+
+    formula                        shift and go to state 25
+    atomic                         shift and go to state 2
+    unary_op                       shift and go to state 3
+    binary_op                      shift and go to state 4
+    parens                         shift and go to state 5
+
+state 15
+
+    (13) binary_op -> formula OR . formula
+    (1) formula -> . atomic
+    (2) formula -> . unary_op
+    (3) formula -> . binary_op
+    (4) formula -> . parens
+    (5) atomic -> . TRUE
+    (6) atomic -> . FALSE
+    (7) atomic -> . PROPOSITION
+    (8) unary_op -> . NOT formula
+    (9) unary_op -> . NEXT formula
+    (10) unary_op -> . EVENTUALLY formula
+    (11) unary_op -> . ALWAYS formula
+    (12) binary_op -> . formula AND formula
+    (13) binary_op -> . formula OR formula
+    (14) binary_op -> . formula IMPLIES formula
+    (15) binary_op -> . formula EQUIV formula
+    (16) binary_op -> . formula UNTIL formula
+    (17) binary_op -> . formula RELEASE formula
+    (18) parens -> . LPAREN formula RPAREN
+
+    TRUE            shift and go to state 6
+    FALSE           shift and go to state 7
+    PROPOSITION     shift and go to state 8
+    NOT             shift and go to state 9
+    NEXT            shift and go to state 10
+    EVENTUALLY      shift and go to state 11
+    ALWAYS          shift and go to state 12
+    LPAREN          shift and go to state 13
+
+    formula                        shift and go to state 26
+    atomic                         shift and go to state 2
+    unary_op                       shift and go to state 3
+    binary_op                      shift and go to state 4
+    parens                         shift and go to state 5
+
+state 16
+
+    (14) binary_op -> formula IMPLIES . formula
+    (1) formula -> . atomic
+    (2) formula -> . unary_op
+    (3) formula -> . binary_op
+    (4) formula -> . parens
+    (5) atomic -> . TRUE
+    (6) atomic -> . FALSE
+    (7) atomic -> . PROPOSITION
+    (8) unary_op -> . NOT formula
+    (9) unary_op -> . NEXT formula
+    (10) unary_op -> . EVENTUALLY formula
+    (11) unary_op -> . ALWAYS formula
+    (12) binary_op -> . formula AND formula
+    (13) binary_op -> . formula OR formula
+    (14) binary_op -> . formula IMPLIES formula
+    (15) binary_op -> . formula EQUIV formula
+    (16) binary_op -> . formula UNTIL formula
+    (17) binary_op -> . formula RELEASE formula
+    (18) parens -> . LPAREN formula RPAREN
+
+    TRUE            shift and go to state 6
+    FALSE           shift and go to state 7
+    PROPOSITION     shift and go to state 8
+    NOT             shift and go to state 9
+    NEXT            shift and go to state 10
+    EVENTUALLY      shift and go to state 11
+    ALWAYS          shift and go to state 12
+    LPAREN          shift and go to state 13
+
+    formula                        shift and go to state 27
+    atomic                         shift and go to state 2
+    unary_op                       shift and go to state 3
+    binary_op                      shift and go to state 4
+    parens                         shift and go to state 5
+
+state 17
+
+    (15) binary_op -> formula EQUIV . formula
+    (1) formula -> . atomic
+    (2) formula -> . unary_op
+    (3) formula -> . binary_op
+    (4) formula -> . parens
+    (5) atomic -> . TRUE
+    (6) atomic -> . FALSE
+    (7) atomic -> . PROPOSITION
+    (8) unary_op -> . NOT formula
+    (9) unary_op -> . NEXT formula
+    (10) unary_op -> . EVENTUALLY formula
+    (11) unary_op -> . ALWAYS formula
+    (12) binary_op -> . formula AND formula
+    (13) binary_op -> . formula OR formula
+    (14) binary_op -> . formula IMPLIES formula
+    (15) binary_op -> . formula EQUIV formula
+    (16) binary_op -> . formula UNTIL formula
+    (17) binary_op -> . formula RELEASE formula
+    (18) parens -> . LPAREN formula RPAREN
+
+    TRUE            shift and go to state 6
+    FALSE           shift and go to state 7
+    PROPOSITION     shift and go to state 8
+    NOT             shift and go to state 9
+    NEXT            shift and go to state 10
+    EVENTUALLY      shift and go to state 11
+    ALWAYS          shift and go to state 12
+    LPAREN          shift and go to state 13
+
+    formula                        shift and go to state 28
+    atomic                         shift and go to state 2
+    unary_op                       shift and go to state 3
+    binary_op                      shift and go to state 4
+    parens                         shift and go to state 5
+
+state 18
+
+    (16) binary_op -> formula UNTIL . formula
+    (1) formula -> . atomic
+    (2) formula -> . unary_op
+    (3) formula -> . binary_op
+    (4) formula -> . parens
+    (5) atomic -> . TRUE
+    (6) atomic -> . FALSE
+    (7) atomic -> . PROPOSITION
+    (8) unary_op -> . NOT formula
+    (9) unary_op -> . NEXT formula
+    (10) unary_op -> . EVENTUALLY formula
+    (11) unary_op -> . ALWAYS formula
+    (12) binary_op -> . formula AND formula
+    (13) binary_op -> . formula OR formula
+    (14) binary_op -> . formula IMPLIES formula
+    (15) binary_op -> . formula EQUIV formula
+    (16) binary_op -> . formula UNTIL formula
+    (17) binary_op -> . formula RELEASE formula
+    (18) parens -> . LPAREN formula RPAREN
+
+    TRUE            shift and go to state 6
+    FALSE           shift and go to state 7
+    PROPOSITION     shift and go to state 8
+    NOT             shift and go to state 9
+    NEXT            shift and go to state 10
+    EVENTUALLY      shift and go to state 11
+    ALWAYS          shift and go to state 12
+    LPAREN          shift and go to state 13
+
+    formula                        shift and go to state 29
+    atomic                         shift and go to state 2
+    unary_op                       shift and go to state 3
+    binary_op                      shift and go to state 4
+    parens                         shift and go to state 5
+
+state 19
+
+    (17) binary_op -> formula RELEASE . formula
+    (1) formula -> . atomic
+    (2) formula -> . unary_op
+    (3) formula -> . binary_op
+    (4) formula -> . parens
+    (5) atomic -> . TRUE
+    (6) atomic -> . FALSE
+    (7) atomic -> . PROPOSITION
+    (8) unary_op -> . NOT formula
+    (9) unary_op -> . NEXT formula
+    (10) unary_op -> . EVENTUALLY formula
+    (11) unary_op -> . ALWAYS formula
+    (12) binary_op -> . formula AND formula
+    (13) binary_op -> . formula OR formula
+    (14) binary_op -> . formula IMPLIES formula
+    (15) binary_op -> . formula EQUIV formula
+    (16) binary_op -> . formula UNTIL formula
+    (17) binary_op -> . formula RELEASE formula
+    (18) parens -> . LPAREN formula RPAREN
+
+    TRUE            shift and go to state 6
+    FALSE           shift and go to state 7
+    PROPOSITION     shift and go to state 8
+    NOT             shift and go to state 9
+    NEXT            shift and go to state 10
+    EVENTUALLY      shift and go to state 11
+    ALWAYS          shift and go to state 12
+    LPAREN          shift and go to state 13
+
+    formula                        shift and go to state 30
+    atomic                         shift and go to state 2
+    unary_op                       shift and go to state 3
+    binary_op                      shift and go to state 4
+    parens                         shift and go to state 5
+
+state 20
+
+    (8) unary_op -> NOT formula .
+    (12) binary_op -> formula . AND formula
+    (13) binary_op -> formula . OR formula
+    (14) binary_op -> formula . IMPLIES formula
+    (15) binary_op -> formula . EQUIV formula
+    (16) binary_op -> formula . UNTIL formula
+    (17) binary_op -> formula . RELEASE formula
+
+  ! shift/reduce conflict for AND resolved as shift
+  ! shift/reduce conflict for OR resolved as shift
+  ! shift/reduce conflict for IMPLIES resolved as shift
+  ! shift/reduce conflict for EQUIV resolved as shift
+  ! shift/reduce conflict for UNTIL resolved as shift
+  ! shift/reduce conflict for RELEASE resolved as shift
+    $end            reduce using rule 8 (unary_op -> NOT formula .)
+    RPAREN          reduce using rule 8 (unary_op -> NOT formula .)
+    AND             shift and go to state 14
+    OR              shift and go to state 15
+    IMPLIES         shift and go to state 16
+    EQUIV           shift and go to state 17
+    UNTIL           shift and go to state 18
+    RELEASE         shift and go to state 19
+
+  ! AND             [ reduce using rule 8 (unary_op -> NOT formula .) ]
+  ! OR              [ reduce using rule 8 (unary_op -> NOT formula .) ]
+  ! IMPLIES         [ reduce using rule 8 (unary_op -> NOT formula .) ]
+  ! EQUIV           [ reduce using rule 8 (unary_op -> NOT formula .) ]
+  ! UNTIL           [ reduce using rule 8 (unary_op -> NOT formula .) ]
+  ! RELEASE         [ reduce using rule 8 (unary_op -> NOT formula .) ]
+
+
+state 21
+
+    (9) unary_op -> NEXT formula .
+    (12) binary_op -> formula . AND formula
+    (13) binary_op -> formula . OR formula
+    (14) binary_op -> formula . IMPLIES formula
+    (15) binary_op -> formula . EQUIV formula
+    (16) binary_op -> formula . UNTIL formula
+    (17) binary_op -> formula . RELEASE formula
+
+  ! shift/reduce conflict for AND resolved as shift
+  ! shift/reduce conflict for OR resolved as shift
+  ! shift/reduce conflict for IMPLIES resolved as shift
+  ! shift/reduce conflict for EQUIV resolved as shift
+  ! shift/reduce conflict for UNTIL resolved as shift
+  ! shift/reduce conflict for RELEASE resolved as shift
+    $end            reduce using rule 9 (unary_op -> NEXT formula .)
+    RPAREN          reduce using rule 9 (unary_op -> NEXT formula .)
+    AND             shift and go to state 14
+    OR              shift and go to state 15
+    IMPLIES         shift and go to state 16
+    EQUIV           shift and go to state 17
+    UNTIL           shift and go to state 18
+    RELEASE         shift and go to state 19
+
+  ! AND             [ reduce using rule 9 (unary_op -> NEXT formula .) ]
+  ! OR              [ reduce using rule 9 (unary_op -> NEXT formula .) ]
+  ! IMPLIES         [ reduce using rule 9 (unary_op -> NEXT formula .) ]
+  ! EQUIV           [ reduce using rule 9 (unary_op -> NEXT formula .) ]
+  ! UNTIL           [ reduce using rule 9 (unary_op -> NEXT formula .) ]
+  ! RELEASE         [ reduce using rule 9 (unary_op -> NEXT formula .) ]
+
+
+state 22
+
+    (10) unary_op -> EVENTUALLY formula .
+    (12) binary_op -> formula . AND formula
+    (13) binary_op -> formula . OR formula
+    (14) binary_op -> formula . IMPLIES formula
+    (15) binary_op -> formula . EQUIV formula
+    (16) binary_op -> formula . UNTIL formula
+    (17) binary_op -> formula . RELEASE formula
+
+  ! shift/reduce conflict for AND resolved as shift
+  ! shift/reduce conflict for OR resolved as shift
+  ! shift/reduce conflict for IMPLIES resolved as shift
+  ! shift/reduce conflict for EQUIV resolved as shift
+  ! shift/reduce conflict for UNTIL resolved as shift
+  ! shift/reduce conflict for RELEASE resolved as shift
+    $end            reduce using rule 10 (unary_op -> EVENTUALLY formula .)
+    RPAREN          reduce using rule 10 (unary_op -> EVENTUALLY formula .)
+    AND             shift and go to state 14
+    OR              shift and go to state 15
+    IMPLIES         shift and go to state 16
+    EQUIV           shift and go to state 17
+    UNTIL           shift and go to state 18
+    RELEASE         shift and go to state 19
+
+  ! AND             [ reduce using rule 10 (unary_op -> EVENTUALLY formula .) ]
+  ! OR              [ reduce using rule 10 (unary_op -> EVENTUALLY formula .) ]
+  ! IMPLIES         [ reduce using rule 10 (unary_op -> EVENTUALLY formula .) ]
+  ! EQUIV           [ reduce using rule 10 (unary_op -> EVENTUALLY formula .) ]
+  ! UNTIL           [ reduce using rule 10 (unary_op -> EVENTUALLY formula .) ]
+  ! RELEASE         [ reduce using rule 10 (unary_op -> EVENTUALLY formula .) ]
+
+
+state 23
+
+    (11) unary_op -> ALWAYS formula .
+    (12) binary_op -> formula . AND formula
+    (13) binary_op -> formula . OR formula
+    (14) binary_op -> formula . IMPLIES formula
+    (15) binary_op -> formula . EQUIV formula
+    (16) binary_op -> formula . UNTIL formula
+    (17) binary_op -> formula . RELEASE formula
+
+  ! shift/reduce conflict for AND resolved as shift
+  ! shift/reduce conflict for OR resolved as shift
+  ! shift/reduce conflict for IMPLIES resolved as shift
+  ! shift/reduce conflict for EQUIV resolved as shift
+  ! shift/reduce conflict for UNTIL resolved as shift
+  ! shift/reduce conflict for RELEASE resolved as shift
+    $end            reduce using rule 11 (unary_op -> ALWAYS formula .)
+    RPAREN          reduce using rule 11 (unary_op -> ALWAYS formula .)
+    AND             shift and go to state 14
+    OR              shift and go to state 15
+    IMPLIES         shift and go to state 16
+    EQUIV           shift and go to state 17
+    UNTIL           shift and go to state 18
+    RELEASE         shift and go to state 19
+
+  ! AND             [ reduce using rule 11 (unary_op -> ALWAYS formula .) ]
+  ! OR              [ reduce using rule 11 (unary_op -> ALWAYS formula .) ]
+  ! IMPLIES         [ reduce using rule 11 (unary_op -> ALWAYS formula .) ]
+  ! EQUIV           [ reduce using rule 11 (unary_op -> ALWAYS formula .) ]
+  ! UNTIL           [ reduce using rule 11 (unary_op -> ALWAYS formula .) ]
+  ! RELEASE         [ reduce using rule 11 (unary_op -> ALWAYS formula .) ]
+
+
+state 24
+
+    (18) parens -> LPAREN formula . RPAREN
+    (12) binary_op -> formula . AND formula
+    (13) binary_op -> formula . OR formula
+    (14) binary_op -> formula . IMPLIES formula
+    (15) binary_op -> formula . EQUIV formula
+    (16) binary_op -> formula . UNTIL formula
+    (17) binary_op -> formula . RELEASE formula
+
+    RPAREN          shift and go to state 31
+    AND             shift and go to state 14
+    OR              shift and go to state 15
+    IMPLIES         shift and go to state 16
+    EQUIV           shift and go to state 17
+    UNTIL           shift and go to state 18
+    RELEASE         shift and go to state 19
+
+
+state 25
+
+    (12) binary_op -> formula AND formula .
+    (12) binary_op -> formula . AND formula
+    (13) binary_op -> formula . OR formula
+    (14) binary_op -> formula . IMPLIES formula
+    (15) binary_op -> formula . EQUIV formula
+    (16) binary_op -> formula . UNTIL formula
+    (17) binary_op -> formula . RELEASE formula
+
+  ! shift/reduce conflict for AND resolved as shift
+  ! shift/reduce conflict for OR resolved as shift
+  ! shift/reduce conflict for IMPLIES resolved as shift
+  ! shift/reduce conflict for EQUIV resolved as shift
+  ! shift/reduce conflict for UNTIL resolved as shift
+  ! shift/reduce conflict for RELEASE resolved as shift
+    $end            reduce using rule 12 (binary_op -> formula AND formula .)
+    RPAREN          reduce using rule 12 (binary_op -> formula AND formula .)
+    AND             shift and go to state 14
+    OR              shift and go to state 15
+    IMPLIES         shift and go to state 16
+    EQUIV           shift and go to state 17
+    UNTIL           shift and go to state 18
+    RELEASE         shift and go to state 19
+
+  ! AND             [ reduce using rule 12 (binary_op -> formula AND formula .) ]
+  ! OR              [ reduce using rule 12 (binary_op -> formula AND formula .) ]
+  ! IMPLIES         [ reduce using rule 12 (binary_op -> formula AND formula .) ]
+  ! EQUIV           [ reduce using rule 12 (binary_op -> formula AND formula .) ]
+  ! UNTIL           [ reduce using rule 12 (binary_op -> formula AND formula .) ]
+  ! RELEASE         [ reduce using rule 12 (binary_op -> formula AND formula .) ]
+
+
+state 26
+
+    (13) binary_op -> formula OR formula .
+    (12) binary_op -> formula . AND formula
+    (13) binary_op -> formula . OR formula
+    (14) binary_op -> formula . IMPLIES formula
+    (15) binary_op -> formula . EQUIV formula
+    (16) binary_op -> formula . UNTIL formula
+    (17) binary_op -> formula . RELEASE formula
+
+  ! shift/reduce conflict for AND resolved as shift
+  ! shift/reduce conflict for OR resolved as shift
+  ! shift/reduce conflict for IMPLIES resolved as shift
+  ! shift/reduce conflict for EQUIV resolved as shift
+  ! shift/reduce conflict for UNTIL resolved as shift
+  ! shift/reduce conflict for RELEASE resolved as shift
+    $end            reduce using rule 13 (binary_op -> formula OR formula .)
+    RPAREN          reduce using rule 13 (binary_op -> formula OR formula .)
+    AND             shift and go to state 14
+    OR              shift and go to state 15
+    IMPLIES         shift and go to state 16
+    EQUIV           shift and go to state 17
+    UNTIL           shift and go to state 18
+    RELEASE         shift and go to state 19
+
+  ! AND             [ reduce using rule 13 (binary_op -> formula OR formula .) ]
+  ! OR              [ reduce using rule 13 (binary_op -> formula OR formula .) ]
+  ! IMPLIES         [ reduce using rule 13 (binary_op -> formula OR formula .) ]
+  ! EQUIV           [ reduce using rule 13 (binary_op -> formula OR formula .) ]
+  ! UNTIL           [ reduce using rule 13 (binary_op -> formula OR formula .) ]
+  ! RELEASE         [ reduce using rule 13 (binary_op -> formula OR formula .) ]
+
+
+state 27
+
+    (14) binary_op -> formula IMPLIES formula .
+    (12) binary_op -> formula . AND formula
+    (13) binary_op -> formula . OR formula
+    (14) binary_op -> formula . IMPLIES formula
+    (15) binary_op -> formula . EQUIV formula
+    (16) binary_op -> formula . UNTIL formula
+    (17) binary_op -> formula . RELEASE formula
+
+  ! shift/reduce conflict for AND resolved as shift
+  ! shift/reduce conflict for OR resolved as shift
+  ! shift/reduce conflict for IMPLIES resolved as shift
+  ! shift/reduce conflict for EQUIV resolved as shift
+  ! shift/reduce conflict for UNTIL resolved as shift
+  ! shift/reduce conflict for RELEASE resolved as shift
+    $end            reduce using rule 14 (binary_op -> formula IMPLIES formula .)
+    RPAREN          reduce using rule 14 (binary_op -> formula IMPLIES formula .)
+    AND             shift and go to state 14
+    OR              shift and go to state 15
+    IMPLIES         shift and go to state 16
+    EQUIV           shift and go to state 17
+    UNTIL           shift and go to state 18
+    RELEASE         shift and go to state 19
+
+  ! AND             [ reduce using rule 14 (binary_op -> formula IMPLIES formula .) ]
+  ! OR              [ reduce using rule 14 (binary_op -> formula IMPLIES formula .) ]
+  ! IMPLIES         [ reduce using rule 14 (binary_op -> formula IMPLIES formula .) ]
+  ! EQUIV           [ reduce using rule 14 (binary_op -> formula IMPLIES formula .) ]
+  ! UNTIL           [ reduce using rule 14 (binary_op -> formula IMPLIES formula .) ]
+  ! RELEASE         [ reduce using rule 14 (binary_op -> formula IMPLIES formula .) ]
+
+
+state 28
+
+    (15) binary_op -> formula EQUIV formula .
+    (12) binary_op -> formula . AND formula
+    (13) binary_op -> formula . OR formula
+    (14) binary_op -> formula . IMPLIES formula
+    (15) binary_op -> formula . EQUIV formula
+    (16) binary_op -> formula . UNTIL formula
+    (17) binary_op -> formula . RELEASE formula
+
+  ! shift/reduce conflict for AND resolved as shift
+  ! shift/reduce conflict for OR resolved as shift
+  ! shift/reduce conflict for IMPLIES resolved as shift
+  ! shift/reduce conflict for EQUIV resolved as shift
+  ! shift/reduce conflict for UNTIL resolved as shift
+  ! shift/reduce conflict for RELEASE resolved as shift
+    $end            reduce using rule 15 (binary_op -> formula EQUIV formula .)
+    RPAREN          reduce using rule 15 (binary_op -> formula EQUIV formula .)
+    AND             shift and go to state 14
+    OR              shift and go to state 15
+    IMPLIES         shift and go to state 16
+    EQUIV           shift and go to state 17
+    UNTIL           shift and go to state 18
+    RELEASE         shift and go to state 19
+
+  ! AND             [ reduce using rule 15 (binary_op -> formula EQUIV formula .) ]
+  ! OR              [ reduce using rule 15 (binary_op -> formula EQUIV formula .) ]
+  ! IMPLIES         [ reduce using rule 15 (binary_op -> formula EQUIV formula .) ]
+  ! EQUIV           [ reduce using rule 15 (binary_op -> formula EQUIV formula .) ]
+  ! UNTIL           [ reduce using rule 15 (binary_op -> formula EQUIV formula .) ]
+  ! RELEASE         [ reduce using rule 15 (binary_op -> formula EQUIV formula .) ]
+
+
+state 29
+
+    (16) binary_op -> formula UNTIL formula .
+    (12) binary_op -> formula . AND formula
+    (13) binary_op -> formula . OR formula
+    (14) binary_op -> formula . IMPLIES formula
+    (15) binary_op -> formula . EQUIV formula
+    (16) binary_op -> formula . UNTIL formula
+    (17) binary_op -> formula . RELEASE formula
+
+  ! shift/reduce conflict for AND resolved as shift
+  ! shift/reduce conflict for OR resolved as shift
+  ! shift/reduce conflict for IMPLIES resolved as shift
+  ! shift/reduce conflict for EQUIV resolved as shift
+  ! shift/reduce conflict for UNTIL resolved as shift
+  ! shift/reduce conflict for RELEASE resolved as shift
+    $end            reduce using rule 16 (binary_op -> formula UNTIL formula .)
+    RPAREN          reduce using rule 16 (binary_op -> formula UNTIL formula .)
+    AND             shift and go to state 14
+    OR              shift and go to state 15
+    IMPLIES         shift and go to state 16
+    EQUIV           shift and go to state 17
+    UNTIL           shift and go to state 18
+    RELEASE         shift and go to state 19
+
+  ! AND             [ reduce using rule 16 (binary_op -> formula UNTIL formula .) ]
+  ! OR              [ reduce using rule 16 (binary_op -> formula UNTIL formula .) ]
+  ! IMPLIES         [ reduce using rule 16 (binary_op -> formula UNTIL formula .) ]
+  ! EQUIV           [ reduce using rule 16 (binary_op -> formula UNTIL formula .) ]
+  ! UNTIL           [ reduce using rule 16 (binary_op -> formula UNTIL formula .) ]
+  ! RELEASE         [ reduce using rule 16 (binary_op -> formula UNTIL formula .) ]
+
+
+state 30
+
+    (17) binary_op -> formula RELEASE formula .
+    (12) binary_op -> formula . AND formula
+    (13) binary_op -> formula . OR formula
+    (14) binary_op -> formula . IMPLIES formula
+    (15) binary_op -> formula . EQUIV formula
+    (16) binary_op -> formula . UNTIL formula
+    (17) binary_op -> formula . RELEASE formula
+
+  ! shift/reduce conflict for AND resolved as shift
+  ! shift/reduce conflict for OR resolved as shift
+  ! shift/reduce conflict for IMPLIES resolved as shift
+  ! shift/reduce conflict for EQUIV resolved as shift
+  ! shift/reduce conflict for UNTIL resolved as shift
+  ! shift/reduce conflict for RELEASE resolved as shift
+    $end            reduce using rule 17 (binary_op -> formula RELEASE formula .)
+    RPAREN          reduce using rule 17 (binary_op -> formula RELEASE formula .)
+    AND             shift and go to state 14
+    OR              shift and go to state 15
+    IMPLIES         shift and go to state 16
+    EQUIV           shift and go to state 17
+    UNTIL           shift and go to state 18
+    RELEASE         shift and go to state 19
+
+  ! AND             [ reduce using rule 17 (binary_op -> formula RELEASE formula .) ]
+  ! OR              [ reduce using rule 17 (binary_op -> formula RELEASE formula .) ]
+  ! IMPLIES         [ reduce using rule 17 (binary_op -> formula RELEASE formula .) ]
+  ! EQUIV           [ reduce using rule 17 (binary_op -> formula RELEASE formula .) ]
+  ! UNTIL           [ reduce using rule 17 (binary_op -> formula RELEASE formula .) ]
+  ! RELEASE         [ reduce using rule 17 (binary_op -> formula RELEASE formula .) ]
+
+
+state 31
+
+    (18) parens -> LPAREN formula RPAREN .
+
+    AND             reduce using rule 18 (parens -> LPAREN formula RPAREN .)
+    OR              reduce using rule 18 (parens -> LPAREN formula RPAREN .)
+    IMPLIES         reduce using rule 18 (parens -> LPAREN formula RPAREN .)
+    EQUIV           reduce using rule 18 (parens -> LPAREN formula RPAREN .)
+    UNTIL           reduce using rule 18 (parens -> LPAREN formula RPAREN .)
+    RELEASE         reduce using rule 18 (parens -> LPAREN formula RPAREN .)
+    $end            reduce using rule 18 (parens -> LPAREN formula RPAREN .)
+    RPAREN          reduce using rule 18 (parens -> LPAREN formula RPAREN .)
+
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for AND in state 20 resolved as shift
+WARNING: shift/reduce conflict for OR in state 20 resolved as shift
+WARNING: shift/reduce conflict for IMPLIES in state 20 resolved as shift
+WARNING: shift/reduce conflict for EQUIV in state 20 resolved as shift
+WARNING: shift/reduce conflict for UNTIL in state 20 resolved as shift
+WARNING: shift/reduce conflict for RELEASE in state 20 resolved as shift
+WARNING: shift/reduce conflict for AND in state 21 resolved as shift
+WARNING: shift/reduce conflict for OR in state 21 resolved as shift
+WARNING: shift/reduce conflict for IMPLIES in state 21 resolved as shift
+WARNING: shift/reduce conflict for EQUIV in state 21 resolved as shift
+WARNING: shift/reduce conflict for UNTIL in state 21 resolved as shift
+WARNING: shift/reduce conflict for RELEASE in state 21 resolved as shift
+WARNING: shift/reduce conflict for AND in state 22 resolved as shift
+WARNING: shift/reduce conflict for OR in state 22 resolved as shift
+WARNING: shift/reduce conflict for IMPLIES in state 22 resolved as shift
+WARNING: shift/reduce conflict for EQUIV in state 22 resolved as shift
+WARNING: shift/reduce conflict for UNTIL in state 22 resolved as shift
+WARNING: shift/reduce conflict for RELEASE in state 22 resolved as shift
+WARNING: shift/reduce conflict for AND in state 23 resolved as shift
+WARNING: shift/reduce conflict for OR in state 23 resolved as shift
+WARNING: shift/reduce conflict for IMPLIES in state 23 resolved as shift
+WARNING: shift/reduce conflict for EQUIV in state 23 resolved as shift
+WARNING: shift/reduce conflict for UNTIL in state 23 resolved as shift
+WARNING: shift/reduce conflict for RELEASE in state 23 resolved as shift
+WARNING: shift/reduce conflict for AND in state 25 resolved as shift
+WARNING: shift/reduce conflict for OR in state 25 resolved as shift
+WARNING: shift/reduce conflict for IMPLIES in state 25 resolved as shift
+WARNING: shift/reduce conflict for EQUIV in state 25 resolved as shift
+WARNING: shift/reduce conflict for UNTIL in state 25 resolved as shift
+WARNING: shift/reduce conflict for RELEASE in state 25 resolved as shift
+WARNING: shift/reduce conflict for AND in state 26 resolved as shift
+WARNING: shift/reduce conflict for OR in state 26 resolved as shift
+WARNING: shift/reduce conflict for IMPLIES in state 26 resolved as shift
+WARNING: shift/reduce conflict for EQUIV in state 26 resolved as shift
+WARNING: shift/reduce conflict for UNTIL in state 26 resolved as shift
+WARNING: shift/reduce conflict for RELEASE in state 26 resolved as shift
+WARNING: shift/reduce conflict for AND in state 27 resolved as shift
+WARNING: shift/reduce conflict for OR in state 27 resolved as shift
+WARNING: shift/reduce conflict for IMPLIES in state 27 resolved as shift
+WARNING: shift/reduce conflict for EQUIV in state 27 resolved as shift
+WARNING: shift/reduce conflict for UNTIL in state 27 resolved as shift
+WARNING: shift/reduce conflict for RELEASE in state 27 resolved as shift
+WARNING: shift/reduce conflict for AND in state 28 resolved as shift
+WARNING: shift/reduce conflict for OR in state 28 resolved as shift
+WARNING: shift/reduce conflict for IMPLIES in state 28 resolved as shift
+WARNING: shift/reduce conflict for EQUIV in state 28 resolved as shift
+WARNING: shift/reduce conflict for UNTIL in state 28 resolved as shift
+WARNING: shift/reduce conflict for RELEASE in state 28 resolved as shift
+WARNING: shift/reduce conflict for AND in state 29 resolved as shift
+WARNING: shift/reduce conflict for OR in state 29 resolved as shift
+WARNING: shift/reduce conflict for IMPLIES in state 29 resolved as shift
+WARNING: shift/reduce conflict for EQUIV in state 29 resolved as shift
+WARNING: shift/reduce conflict for UNTIL in state 29 resolved as shift
+WARNING: shift/reduce conflict for RELEASE in state 29 resolved as shift
+WARNING: shift/reduce conflict for AND in state 30 resolved as shift
+WARNING: shift/reduce conflict for OR in state 30 resolved as shift
+WARNING: shift/reduce conflict for IMPLIES in state 30 resolved as shift
+WARNING: shift/reduce conflict for EQUIV in state 30 resolved as shift
+WARNING: shift/reduce conflict for UNTIL in state 30 resolved as shift
+WARNING: shift/reduce conflict for RELEASE in state 30 resolved as shift
