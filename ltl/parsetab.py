@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'leftEQUIVleftIMPLIESleftORleftANDrightNOTNEXTEVENTUALLYALWAYSleftUNTILRELEASEALWAYS AND EQUIV EVENTUALLY FALSE IMPLIES LPAREN NEXT NOT OR PROPOSITION RELEASE RPAREN TRUE UNTIL\n        formula : formula EQUIV formula\n                | formula IMPLIES formula\n                | formula OR formula\n                | formula AND formula\n                | NOT formula\n                | NEXT formula\n                | EVENTUALLY formula\n                | ALWAYS formula\n                | formula UNTIL formula\n                | formula RELEASE formula\n                | atomic\n                | LPAREN formula RPAREN\n        \n        atomic : TRUE\n               | FALSE\n               | PROPOSITION\n        '
+_lr_signature = 'leftEQUIVleftIMPLIESleftORleftANDrightNOTNEXTEVENTUALLYALWAYSleftUNTILRELEASEnonassocLIMSUPAVGLIMINFAVGALWAYS AND EQUIV EVENTUALLY FALSE IMPLIES LIMINFAVG LIMSUPAVG LPAREN NEXT NOT OR PROPOSITION RELEASE RPAREN TRUE UNTIL\n        formula : formula EQUIV formula\n                | formula IMPLIES formula\n                | formula OR formula\n                | formula AND formula\n                | NOT formula\n                | NEXT formula\n                | EVENTUALLY formula\n                | ALWAYS formula\n                | formula UNTIL formula\n                | formula RELEASE formula\n                | limavg_formula\n                | atomic\n                | LPAREN formula RPAREN\n        \n        limavg_formula : LIMSUPAVG LPAREN formula RPAREN\n                      | LIMINFAVG LPAREN formula RPAREN\n        \n        atomic : TRUE\n               | FALSE\n               | PROPOSITION\n        '
     
-_lr_action_items = {'NOT':([0,2,3,4,5,7,11,12,13,14,15,16,],[2,2,2,2,2,2,2,2,2,2,2,2,]),'NEXT':([0,2,3,4,5,7,11,12,13,14,15,16,],[3,3,3,3,3,3,3,3,3,3,3,3,]),'EVENTUALLY':([0,2,3,4,5,7,11,12,13,14,15,16,],[4,4,4,4,4,4,4,4,4,4,4,4,]),'ALWAYS':([0,2,3,4,5,7,11,12,13,14,15,16,],[5,5,5,5,5,5,5,5,5,5,5,5,]),'LPAREN':([0,2,3,4,5,7,11,12,13,14,15,16,],[7,7,7,7,7,7,7,7,7,7,7,7,]),'TRUE':([0,2,3,4,5,7,11,12,13,14,15,16,],[8,8,8,8,8,8,8,8,8,8,8,8,]),'FALSE':([0,2,3,4,5,7,11,12,13,14,15,16,],[9,9,9,9,9,9,9,9,9,9,9,9,]),'PROPOSITION':([0,2,3,4,5,7,11,12,13,14,15,16,],[10,10,10,10,10,10,10,10,10,10,10,10,]),'$end':([1,6,8,9,10,17,18,19,20,22,23,24,25,26,27,28,],[0,-11,-13,-14,-15,-5,-6,-7,-8,-1,-2,-3,-4,-9,-10,-12,]),'EQUIV':([1,6,8,9,10,17,18,19,20,21,22,23,24,25,26,27,28,],[11,-11,-13,-14,-15,-5,-6,-7,-8,11,-1,-2,-3,-4,-9,-10,-12,]),'IMPLIES':([1,6,8,9,10,17,18,19,20,21,22,23,24,25,26,27,28,],[12,-11,-13,-14,-15,-5,-6,-7,-8,12,12,-2,-3,-4,-9,-10,-12,]),'OR':([1,6,8,9,10,17,18,19,20,21,22,23,24,25,26,27,28,],[13,-11,-13,-14,-15,-5,-6,-7,-8,13,13,13,-3,-4,-9,-10,-12,]),'AND':([1,6,8,9,10,17,18,19,20,21,22,23,24,25,26,27,28,],[14,-11,-13,-14,-15,-5,-6,-7,-8,14,14,14,14,-4,-9,-10,-12,]),'UNTIL':([1,6,8,9,10,17,18,19,20,21,22,23,24,25,26,27,28,],[15,-11,-13,-14,-15,15,15,15,15,15,15,15,15,15,-9,-10,-12,]),'RELEASE':([1,6,8,9,10,17,18,19,20,21,22,23,24,25,26,27,28,],[16,-11,-13,-14,-15,16,16,16,16,16,16,16,16,16,-9,-10,-12,]),'RPAREN':([6,8,9,10,17,18,19,20,21,22,23,24,25,26,27,28,],[-11,-13,-14,-15,-5,-6,-7,-8,28,-1,-2,-3,-4,-9,-10,-12,]),}
+_lr_action_items = {'NOT':([0,2,3,4,5,8,14,15,16,17,18,19,25,26,],[2,2,2,2,2,2,2,2,2,2,2,2,2,2,]),'NEXT':([0,2,3,4,5,8,14,15,16,17,18,19,25,26,],[3,3,3,3,3,3,3,3,3,3,3,3,3,3,]),'EVENTUALLY':([0,2,3,4,5,8,14,15,16,17,18,19,25,26,],[4,4,4,4,4,4,4,4,4,4,4,4,4,4,]),'ALWAYS':([0,2,3,4,5,8,14,15,16,17,18,19,25,26,],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,]),'LPAREN':([0,2,3,4,5,8,9,10,14,15,16,17,18,19,25,26,],[8,8,8,8,8,8,25,26,8,8,8,8,8,8,8,8,]),'LIMSUPAVG':([0,2,3,4,5,8,14,15,16,17,18,19,25,26,],[9,9,9,9,9,9,9,9,9,9,9,9,9,9,]),'LIMINFAVG':([0,2,3,4,5,8,14,15,16,17,18,19,25,26,],[10,10,10,10,10,10,10,10,10,10,10,10,10,10,]),'TRUE':([0,2,3,4,5,8,14,15,16,17,18,19,25,26,],[11,11,11,11,11,11,11,11,11,11,11,11,11,11,]),'FALSE':([0,2,3,4,5,8,14,15,16,17,18,19,25,26,],[12,12,12,12,12,12,12,12,12,12,12,12,12,12,]),'PROPOSITION':([0,2,3,4,5,8,14,15,16,17,18,19,25,26,],[13,13,13,13,13,13,13,13,13,13,13,13,13,13,]),'$end':([1,6,7,11,12,13,20,21,22,23,27,28,29,30,31,32,33,36,37,],[0,-11,-12,-16,-17,-18,-5,-6,-7,-8,-1,-2,-3,-4,-9,-10,-13,-14,-15,]),'EQUIV':([1,6,7,11,12,13,20,21,22,23,24,27,28,29,30,31,32,33,34,35,36,37,],[14,-11,-12,-16,-17,-18,-5,-6,-7,-8,14,-1,-2,-3,-4,-9,-10,-13,14,14,-14,-15,]),'IMPLIES':([1,6,7,11,12,13,20,21,22,23,24,27,28,29,30,31,32,33,34,35,36,37,],[15,-11,-12,-16,-17,-18,-5,-6,-7,-8,15,15,-2,-3,-4,-9,-10,-13,15,15,-14,-15,]),'OR':([1,6,7,11,12,13,20,21,22,23,24,27,28,29,30,31,32,33,34,35,36,37,],[16,-11,-12,-16,-17,-18,-5,-6,-7,-8,16,16,16,-3,-4,-9,-10,-13,16,16,-14,-15,]),'AND':([1,6,7,11,12,13,20,21,22,23,24,27,28,29,30,31,32,33,34,35,36,37,],[17,-11,-12,-16,-17,-18,-5,-6,-7,-8,17,17,17,17,-4,-9,-10,-13,17,17,-14,-15,]),'UNTIL':([1,6,7,11,12,13,20,21,22,23,24,27,28,29,30,31,32,33,34,35,36,37,],[18,-11,-12,-16,-17,-18,18,18,18,18,18,18,18,18,18,-9,-10,-13,18,18,-14,-15,]),'RELEASE':([1,6,7,11,12,13,20,21,22,23,24,27,28,29,30,31,32,33,34,35,36,37,],[19,-11,-12,-16,-17,-18,19,19,19,19,19,19,19,19,19,-9,-10,-13,19,19,-14,-15,]),'RPAREN':([6,7,11,12,13,20,21,22,23,24,27,28,29,30,31,32,33,34,35,36,37,],[-11,-12,-16,-17,-18,-5,-6,-7,-8,33,-1,-2,-3,-4,-9,-10,-13,36,37,-14,-15,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'formula':([0,2,3,4,5,7,11,12,13,14,15,16,],[1,17,18,19,20,21,22,23,24,25,26,27,]),'atomic':([0,2,3,4,5,7,11,12,13,14,15,16,],[6,6,6,6,6,6,6,6,6,6,6,6,]),}
+_lr_goto_items = {'formula':([0,2,3,4,5,8,14,15,16,17,18,19,25,26,],[1,20,21,22,23,24,27,28,29,30,31,32,34,35,]),'limavg_formula':([0,2,3,4,5,8,14,15,16,17,18,19,25,26,],[6,6,6,6,6,6,6,6,6,6,6,6,6,6,]),'atomic':([0,2,3,4,5,8,14,15,16,17,18,19,25,26,],[7,7,7,7,7,7,7,7,7,7,7,7,7,7,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -27,19 +27,22 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> formula","S'",1,None,None,None),
-  ('formula -> formula EQUIV formula','formula',3,'p_formula','parser.py',49),
-  ('formula -> formula IMPLIES formula','formula',3,'p_formula','parser.py',50),
-  ('formula -> formula OR formula','formula',3,'p_formula','parser.py',51),
-  ('formula -> formula AND formula','formula',3,'p_formula','parser.py',52),
-  ('formula -> NOT formula','formula',2,'p_formula','parser.py',53),
-  ('formula -> NEXT formula','formula',2,'p_formula','parser.py',54),
-  ('formula -> EVENTUALLY formula','formula',2,'p_formula','parser.py',55),
-  ('formula -> ALWAYS formula','formula',2,'p_formula','parser.py',56),
-  ('formula -> formula UNTIL formula','formula',3,'p_formula','parser.py',57),
-  ('formula -> formula RELEASE formula','formula',3,'p_formula','parser.py',58),
-  ('formula -> atomic','formula',1,'p_formula','parser.py',59),
-  ('formula -> LPAREN formula RPAREN','formula',3,'p_formula','parser.py',60),
-  ('atomic -> TRUE','atomic',1,'p_atomic','parser.py',73),
-  ('atomic -> FALSE','atomic',1,'p_atomic','parser.py',74),
-  ('atomic -> PROPOSITION','atomic',1,'p_atomic','parser.py',75),
+  ('formula -> formula EQUIV formula','formula',3,'p_formula','parser.py',55),
+  ('formula -> formula IMPLIES formula','formula',3,'p_formula','parser.py',56),
+  ('formula -> formula OR formula','formula',3,'p_formula','parser.py',57),
+  ('formula -> formula AND formula','formula',3,'p_formula','parser.py',58),
+  ('formula -> NOT formula','formula',2,'p_formula','parser.py',59),
+  ('formula -> NEXT formula','formula',2,'p_formula','parser.py',60),
+  ('formula -> EVENTUALLY formula','formula',2,'p_formula','parser.py',61),
+  ('formula -> ALWAYS formula','formula',2,'p_formula','parser.py',62),
+  ('formula -> formula UNTIL formula','formula',3,'p_formula','parser.py',63),
+  ('formula -> formula RELEASE formula','formula',3,'p_formula','parser.py',64),
+  ('formula -> limavg_formula','formula',1,'p_formula','parser.py',65),
+  ('formula -> atomic','formula',1,'p_formula','parser.py',66),
+  ('formula -> LPAREN formula RPAREN','formula',3,'p_formula','parser.py',67),
+  ('limavg_formula -> LIMSUPAVG LPAREN formula RPAREN','limavg_formula',4,'p_limavg_formula','parser.py',80),
+  ('limavg_formula -> LIMINFAVG LPAREN formula RPAREN','limavg_formula',4,'p_limavg_formula','parser.py',81),
+  ('atomic -> TRUE','atomic',1,'p_atomic','parser.py',87),
+  ('atomic -> FALSE','atomic',1,'p_atomic','parser.py',88),
+  ('atomic -> PROPOSITION','atomic',1,'p_atomic','parser.py',89),
 ]

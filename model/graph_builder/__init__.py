@@ -1,3 +1,3 @@
-from .model import StateTransitionGraph
+from .model import KripkeStructure
 
-__all__ = ['StateTransitionGraph']
+__all__ = ['KripkeStructure']
