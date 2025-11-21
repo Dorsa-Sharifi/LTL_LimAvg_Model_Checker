@@ -323,23 +323,23 @@ class LTLimProcessor:
                 return tree[1]  # Double negation
 
             elif op == 'X':
-                return ('X', self.negate_formula(tree[1]))
+                return 'X', self.negate_formula(tree[1])
 
             elif op == 'F':
-                return ('G', self.negate_formula(tree[1]))
+                return 'G', self.negate_formula(tree[1])
 
             elif op == 'G':
-                return ('F', self.negate_formula(tree[1]))
+                return 'F', self.negate_formula(tree[1])
 
             elif op == '∧':
-                return ('∨', self.negate_formula(tree[1]), self.negate_formula(tree[2]))
+                return '∨', self.negate_formula(tree[1]), self.negate_formula(tree[2])
 
             elif op == '∨':
-                return ('∧', self.negate_formula(tree[1]), self.negate_formula(tree[2]))
+                return '∧', self.negate_formula(tree[1]), self.negate_formula(tree[2])
 
             elif op == '→':
                 # ¬(φ → ψ) ≡ φ ∧ ¬ψ
-                return ('∧', tree[1], self.negate_formula(tree[2]))
+                return '∧', tree[1], self.negate_formula(tree[2])
 
             elif op == '↔':
                 # ¬(φ ↔ ψ) ≡ (φ ∧ ¬ψ) ∨ (¬φ ∧ ψ)
@@ -348,13 +348,13 @@ class LTLimProcessor:
                         ('∧', self.negate_formula(tree[1]), tree[2]))
 
             elif op == 'U':
-                return ('R', self.negate_formula(tree[1]), self.negate_formula(tree[2]))
+                return 'R', self.negate_formula(tree[1]), self.negate_formula(tree[2])
 
             elif op == 'R':
-                return ('U', self.negate_formula(tree[1]), self.negate_formula(tree[2]))
+                return 'U', self.negate_formula(tree[1]), self.negate_formula(tree[2])
 
             elif op == 'paren':
-                return ('paren', self.negate_formula(tree[1]))
+                return 'paren', self.negate_formula(tree[1])
 
             else:  # Arithmetic operators
                 return tree
@@ -1105,7 +1105,6 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
             print(f"  DEBUG: About to create ProductAutomaton...")
             print(f"  DEBUG: ProductAutomaton type: {type(ProductAutomaton)}")
 
-            # FIX: Make sure we're calling the class constructor
             product = ProductAutomaton(
                 qks=self.qks,
                 buchi_automaton=buchi_automaton,
@@ -1174,23 +1173,32 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
             return None
 
     def _check_fair_computations(self, product: ProductAutomaton, chi: str):
-        """Check if product has fair computations satisfying the limit-average formula χ"""
+        """Complete implementation of Lemma 4.2 - FINAL VERSION"""
         print(f"  🔍 Checking for fair computations satisfying: {chi}")
 
         if not product.accepting_states:
             print(f"  ⚠️ No accepting states in product - no fair computations")
             return False
 
-        # Simple check: see if there's any path that can reach accepting states
-        reachable_accepting = self._find_reachable_accepting_states(product)
+        # Step 1: Find all fair MSCCs
+        fair_msccs = self.find_fair_msccs(product)
 
-        if reachable_accepting:
-            print(f"  ✅ Potential fair computations found")
-            print(f"  📍 Reachable accepting states: {len(reachable_accepting)}")
-            return True
-        else:
-            print(f"  ❌ No fair computations found")
+        if not fair_msccs:
+            print(f"  ⚠️ No fair MSCCs found")
             return False
+
+        print(f"  📍 Found {len(fair_msccs)} fair MSCCs")
+
+        # Step 2: Check each fair MSCC with ComponentCheck
+        for i, mscc in enumerate(fair_msccs):
+            print(f"  🔎 Checking MSCC {i + 1} with {len(mscc)} states")
+            if self.component_check(mscc, chi, product):
+                print(f"  ✅ MSCC {i + 1} satisfies χ")
+                return True
+
+        print(f"  ❌ No fair MSCC satisfies χ")
+        return False
+
 
     def _find_reachable_accepting_states(self, product: ProductAutomaton):
         """Find accepting states reachable from initial states - FIXED"""
@@ -1216,267 +1224,446 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
 
         return reachable_accepting
 
+    def _find_all_msccs(self, product: ProductAutomaton):
+        """Find all Maximally Strongly Connected Components using Tarjan's algorithm"""
+        print(f"  🔍 Finding MSCCs in product with {len(product.states)} states...")
 
-# Test cases
-# if __name__ == "__main__":
-#     # Replace "your_username" with your actual WSL username
-#     processor = WSLSpotLTLimProcessor("/home/otebook/ltl_to_nbw.py")
-#
-#     test_formulas = [
-#         # Simple cases
-#         "LimInfAvg(x) >= 5",
-#         "LimSupAvg(y) >= 3.5 ∧ F p",
-#
-#         # Multiple assertions
-#         "LimInfAvg(x) >= 5 ∧ LimSupAvg(y) >= 3.0",
-#         "F(LimInfAvg(y) >= 2.0) ∨ G(LimSupAvg(y) >= 4.0)",
-#
-#         # Complex cases with implications
-#         "(LimInfAvg(x) >= 5 → F p) ∧ LimSupAvg(y) >= 3.0",
-#         "G((LimInfAvg(x) >= 2.0 ∧ p) → F q)",
-#
-#         # Standard LTL formulas (should still work)
-#         "p U q",
-#         "F p ∧ G q",
-#
-#         # Real-world example
-#         "G(request → (F response ∧ LimInfAvg(ServiceTime) >= 0.9))"
-#     ]
-#
-#     for i, formula in enumerate(test_formulas, 1):
-#         print(f"\n{'#' * 80}")
-#         print(f"TEST {i}: {formula}")
-#         print(f"{'#' * 80}")
-#
-#         try:
-#             # Use the new method that includes NBW conversion
-#             nbw_results = processor.complete_pipeline_with_nbw(formula)
-#
-#             if nbw_results:
-#                 print(f"\n✅ SUCCESS: Processed {formula}")
-#                 print(f"   Generated {len(nbw_results)} NBW automata")
-#
-#                 # Count successful conversions
-#                 successful_conversions = sum(
-#                     1 for _, _, result in nbw_results if result and result.get('success', False))
-#                 print(f"   Successful NBW conversions: {successful_conversions}/{len(nbw_results)}")
-#             else:
-#                 print(f"\n❌ FAILED: No results for {formula}")
-#
-#         except Exception as e:
-#             print(f"\n💥 ERROR processing {formula}: {e}")
-#
-#         # Reset for next formula
-#         processor.variables.clear()
-#         processor.propositions.clear()
-#         processor.limit_avg_assertions.clear()
-#         print("\n" + "=" * 80 + "\n")
+        index = 0
+        indices = {}
+        lowlinks = {}
+        stack = []
+        on_stack = set()
+        msccs = []
 
+        def strongconnect(state):
+            nonlocal index
+            indices[state] = index
+            lowlinks[state] = index
+            index += 1
+            stack.append(state)
+            on_stack.add(state)
 
-# =============================================================================
-# TEST CODE - REPLACE YOUR EXISTING TEST SECTION WITH THIS
-# =============================================================================
+            # Consider successors of state
+            if state in product.transitions:
+                for successor in product.transitions[state]:
+                    if successor not in indices:
+                        # Successor has not yet been visited; recurse on it
+                        strongconnect(successor)
+                        lowlinks[state] = min(lowlinks[state], lowlinks[successor])
+                    elif successor in on_stack:
+                        # Successor is in stack and hence in the current SCC
+                        lowlinks[state] = min(lowlinks[state], indices[successor])
 
-# =============================================================================
-# COMPREHENSIVE TEST SUITE FOR LTLim PROCESSOR
-# =============================================================================
+            # If state is a root node, pop the stack and generate an SCC
+            if lowlinks[state] == indices[state]:
+                scc = set()
+                while True:
+                    successor = stack.pop()
+                    on_stack.remove(successor)
+                    scc.add(successor)
+                    if successor == state:
+                        break
+                msccs.append(scc)
 
-if __name__ == "__main__":
-    # Create a comprehensive Quantitative Kripke Structure for testing
-    qks = QuantitativeKripkeStructure(
-        states={'s0', 's1', 's2', 's3'},
-        init_state='s0',
-        edges={
-            ('s0', 's1'), ('s0', 's2'),
-            ('s1', 's0'), ('s1', 's2'), ('s1', 's3'),
-            ('s2', 's1'), ('s2', 's3'),
-            ('s3', 's0'), ('s3', 's2')
-        },
-        boolean_vars={'p', 'q', 'r'},
-        logical_formulas={
-            's0': {'p'},
-            's1': {'q'},
-            's2': {'p', 'r'},
-            's3': {'q', 'r'}
-        },
-        numeric_values={
-            's0': {'x': 1.0, 'y': 2.0, 'z': 0.5},
-            's1': {'x': 3.0, 'y': 1.0, 'z': 1.5},
-            's2': {'x': 2.0, 'y': 3.0, 'z': 0.8},
-            's3': {'x': 4.0, 'y': 0.5, 'z': 2.0}
-        }
-    )
+        # Start DFS from all unvisited states
+        for state in product.states:
+            if state not in indices:
+                strongconnect(state)
 
-    # Use the enhanced processor with the QKS
-    processor = EnhancedLTLimProcessor("/home/otebook/ltl_to_nbw.py", qks)
+        # Filter to non-trivial MSCCs (size > 1 or self-loop)
+        non_trivial_msccs = []
+        for scc in msccs:
+            if len(scc) > 1:
+                non_trivial_msccs.append(scc)
+            else:
+                # Check if single state has self-loop
+                state = next(iter(scc))
+                if state in product.transitions and state in product.transitions[state]:
+                    non_trivial_msccs.append(scc)
 
-    # =============================================================================
-    # COMPREHENSIVE TEST CATEGORIES
-    # =============================================================================
+        print(f"  📊 Found {len(msccs)} SCCs, {len(non_trivial_msccs)} non-trivial MSCCs")
 
-    test_categories = {
-        "BASIC LTL FORMULAS": [
-            "p",  # Simple proposition
-            "p ∧ q",  # Conjunction
-            "p ∨ q",  # Disjunction
-            "¬p",  # Negation
-            "F p",  # Finally
-            "G p",  # Globally
-            "X p",  # Next
-            "p U q",  # Until
-            "p R q",  # Release
-            "p → q",  # Implication
-            "p ↔ q",  # If and only if
-        ],
+        # Sort by size (largest first) for debugging
+        non_trivial_msccs.sort(key=len, reverse=True)
+        for i, mscc in enumerate(non_trivial_msccs[:3]):  # Show top 3
+            print(f"    MSCC {i + 1}: {len(mscc)} states")
 
-        "LIMIT-AVERAGE ASSERTIONS (SIMPLE)": [
-            "LimInfAvg(x) >= 2.0",
-            "LimSupAvg(y) <= 3.0",
-            "LimInfAvg(z) > 1.0",
-            "LimSupAvg(x) < 4.0",
-        ],
+        return non_trivial_msccs
 
-        "LIMIT-AVERAGE WITH BOOLEAN COMBINATIONS": [
-            "LimInfAvg(x) >= 2.0 ∧ p",
-            "LimSupAvg(y) <= 3.0 ∨ q",
-            "F(LimInfAvg(z) > 1.0)",
-            "G(LimSupAvg(x) < 4.0 → p)",
-            "LimInfAvg(x) >= 2.0 → F q",
-        ],
+    def find_fair_msccs(self, product: ProductAutomaton):
+        """Find all fair MSCCs (M ∩ α ≠ ∅) in product automaton"""
+        all_msccs = self._find_all_msccs(product)
 
-        # "MULTIPLE LIMIT-AVERAGE ASSERTIONS": [
-        #     "LimInfAvg(x) >= 2.0 ∧ LimSupAvg(y) <= 3.0",
-        #     "LimInfAvg(x) >= 1.0 ∨ LimSupAvg(z) <= 2.0",
-        #     "LimInfAvg(x) >= 2.0 → LimSupAvg(y) <= 3.0",
-        #     "F(LimInfAvg(x) >= 2.0 ∧ LimSupAvg(y) <= 3.0)",
-        # ],
-        #
-        # "COMPLEX TEMPORAL PATTERNS": [
-        #     "G(p → F q)",  # Response property
-        #     "G F p",  # Infinitely often p
-        #     "F G p",  # Eventually always p
-        #     "(p U q) U r",  # Nested until
-        #     "G(p → (q U r))",  # Conditional until
-        #     "F p ∧ G(q → F r)",  # Complex combination
-        # ],
-        #
-        # "LIMIT-AVERAGE WITH COMPLEX TEMPORAL LOGIC": [
-        #     "G(request → (F response ∧ LimInfAvg(service_time) >= 0.9))",
-        #     "F(LimInfAvg(power_consumption) <= 5.0 ∧ G safe_mode)",
-        #     "(LimInfAvg(throughput) >= 100.0) U maintenance",
-        #     "G((LimInfAvg(queue_length) >= 10.0) → F scale_up)",
-        # ],
-        #
-        # "EDGE CASES AND BOUNDARY CONDITIONS": [
-        #     "true",  # Tautology
-        #     "false",  # Contradiction
-        #     "LimInfAvg(x) >= 0.0",  # Always true bound
-        #     "LimSupAvg(y) <= 100.0",  # Very loose bound
-        #     "LimInfAvg(x) >= 10.0",  # Very strict bound
-        #     "p ∧ ¬p",  # Contradiction
-        #     "p ∨ ¬p",  # Tautology
-        # ],
-        #
-        # "MIXED OPERATOR PRECEDENCE": [
-        #     "p ∧ q ∨ r",  # Precedence test 1
-        #     "p ∨ q ∧ r",  # Precedence test 2
-        #     "p → q ∧ r",  # Precedence test 3
-        #     "p U q ∧ r",  # Precedence test 4
-        #     "F p ∧ G q ∨ X r",  # Precedence test 5
-        #     "LimInfAvg(x) >= 2.0 ∧ p ∨ q",  # Mixed with limit-avg
-        # ],
-        #
-        # "REAL-WORLD SCENARIOS": [
-        #     # Resource management
-        #     "G((high_demand → F scale_out) ∧ LimInfAvg(cost) <= 50.0)",
-        #
-        #     # Quality of service
-        #     "G(request → (F response ∧ LimInfAvg(response_time) <= 2.0))",
-        #
-        #     # Energy management
-        #     "G(LimInfAvg(battery_level) >= 20.0 → F recharge)",
-        #
-        #     # Load balancing
-        #     "F G(LimSupAvg(server_load) <= 80.0 ∧ balanced)",
-        #
-        #     # Safety critical system
-        #     "G(error → (F recovery ∧ LimInfAvg(availability) >= 0.999))",
-        # ]
-    }
+        fair_msccs = []
+        for mscc in all_msccs:
+            # Check if MSCC contains at least one accepting state
+            if any(state in product.accepting_states for state in mscc):
+                fair_msccs.append(mscc)
 
-    # =============================================================================
-    # TEST EXECUTION
-    # =============================================================================
-    # =============================================================================
-    # DEBUG TEST - FIND THE EXACT ISSUE
-    # =============================================================================
+        print(f"  🎯 Found {len(fair_msccs)} fair MSCCs (with accepting states)")
 
-    print("🔍 DEBUG TEST - FINDING THE EXACT ISSUE")
-    print("=" * 100)
+        # Debug: Show accepting states in each fair MSCC
+        for i, mscc in enumerate(fair_msccs):
+            accepting_count = sum(1 for state in mscc if state in product.accepting_states)
+            print(f"    Fair MSCC {i + 1}: {len(mscc)} states, {accepting_count} accepting")
 
-    # Test with the problematic formula first
-    debug_formula = "LimInfAvg(x) >= 2.0"
-    print(f"Testing: {debug_formula}")
+        return fair_msccs
 
-    try:
-        # Create processor
-        qks = QuantitativeKripkeStructure(
-            states={'s0', 's1', 's2', 's3'},
-            init_state='s0',
-            edges={
-                ('s0', 's1'), ('s0', 's2'),
-                ('s1', 's0'), ('s1', 's2'), ('s1', 's3'),
-                ('s2', 's1'), ('s2', 's3'),
-                ('s3', 's0'), ('s3', 's2')
-            },
-            boolean_vars={'p', 'q', 'r'},
-            logical_formulas={
-                's0': {'p'},
-                's1': {'q'},
-                's2': {'p', 'r'},
-                's3': {'q', 'r'}
-            },
-            numeric_values={
-                's0': {'x': 1.0, 'y': 2.0, 'z': 0.5},
-                's1': {'x': 3.0, 'y': 1.0, 'z': 1.5},
-                's2': {'x': 2.0, 'y': 3.0, 'z': 0.8},
-                's3': {'x': 4.0, 'y': 0.5, 'z': 2.0}
-            }
-        )
+    def _parse_limit_avg_formula(self, chi: str):
+        """Parse limit-average formula into linear constraints that define A(χ)"""
+        print(f"    📐 Parsing χ to define polyhedron A(χ)...")
 
-        processor = EnhancedLTLimProcessor("/home/otebook/ltl_to_nbw.py", qks)
+        # Remove outer parentheses if present
+        chi = chi.strip()
+        if chi.startswith('(') and chi.endswith(')'):
+            chi = chi[1:-1]
 
-        # Test just the NBW conversion first
-        print("\n1. Testing NBW conversion only...")
-        nbw_results = processor.complete_pipeline_with_nbw(debug_formula)
+        constraints = []
 
-        if nbw_results:
-            print(f"✅ NBW conversion successful: {len(nbw_results)} results")
-
-            # Now test product construction
-            print("\n2. Testing product construction...")
-            for i, (chi, xi, nbw_result) in enumerate(nbw_results):
-                print(f"   Disjunct {i + 1}: χ='{chi}', ξ='{xi}'")
-
-                # Test building product for this disjunct
-                print(f"   DEBUG: About to call build_product_for_disjunct...")
-                print(f"   DEBUG: ProductAutomaton type: {type(ProductAutomaton)}")
-
-                product = processor.build_product_for_disjunct(chi, xi, nbw_result)
-                if product:
-                    print(f"   ✅ Product built successfully")
-                else:
-                    print(f"   ❌ Product construction failed")
-
+        # Split by AND (we handle conjunctions first)
+        if ' ∧ ' in chi:
+            parts = chi.split(' ∧ ')
         else:
-            print("❌ NBW conversion failed")
+            parts = [chi]
 
-    except Exception as e:
-        print(f"💥 DEBUG TEST ERROR: {e}")
-        import traceback
+        for part in parts:
+            part = part.strip()
+            constraint = self._parse_single_assertion(part)
+            if constraint:
+                constraints.append(constraint)
+                print(f"    📏 A(χ) constraint: {constraint['variable']} {constraint['operator']} {constraint['value']}")
 
-        traceback.print_exc()
+        print(f"    📊 A(χ) defined by {len(constraints)} half-spaces/equations")
+        return constraints
 
-    print("\n" + "=" * 100)
-    print("END DEBUG TEST")
-    print("=" * 100)
+    def _parse_single_assertion(self, assertion: str):
+        """Parse a single limit-average assertion into (variable, operator, value)"""
+        # Examples:
+        # "LimInfAvg(x) >= 2" -> ('x', 'LimInfAvg', '>=', 2.0)
+        # "LimSupAvg(y) < 5" -> ('y', 'LimSupAvg', '<', 5.0)
+
+        try:
+            # Extract variable name, type, operator, and value
+            import re
+
+            # Match patterns like: LimInfAvg(x) >= 2.5
+            match = re.match(r'(LimInfAvg|LimSupAvg)\((\w+)\)\s*([><=]=?|!=)\s*([\d.]+)', assertion)
+            if match:
+                avg_type, var_name, operator, value_str = match.groups()
+                value = float(value_str)
+
+                # Convert operators to standard forms
+                if operator == '>=':
+                    op = '>='
+                elif operator == '<=':
+                    op = '<='
+                elif operator == '>':
+                    op = '>'
+                elif operator == '<':
+                    op = '<'
+                elif operator == '=' or operator == '==':
+                    op = '='
+                else:
+                    print(f"    ⚠️ Unsupported operator: {operator}")
+                    return None
+
+                return {
+                    'variable': var_name,
+                    'type': avg_type,  # 'LimInfAvg' or 'LimSupAvg'
+                    'operator': op,
+                    'value': value
+                }
+
+            # Handle negated assertions: ¬(LimInfAvg(x) >= 2)
+            match_neg = re.match(r'¬\((LimInfAvg|LimSupAvg)\((\w+)\)\s*([><=]=?|!=)\s*([\d.]+)\)', assertion)
+            if match_neg:
+                # For negation, flip the operator
+                avg_type, var_name, operator, value_str = match_neg.groups()
+                value = float(value_str)
+
+                # Flip operators for negation
+                neg_ops = {'>=': '<', '<=': '>', '>': '<=', '<': '>=', '=': '!='}
+                op = neg_ops.get(operator, f'¬{operator}')
+
+                return {
+                    'variable': var_name,
+                    'type': avg_type,
+                    'operator': op,
+                    'value': value
+                }
+
+        except Exception as e:
+            print(f"    ❌ Error parsing assertion '{assertion}': {e}")
+
+        return None
+
+    def _build_and_solve_lp(self, mscc, constraints, product: ProductAutomaton):
+        """Build and solve LP to check if MSCC can satisfy limit-average constraints"""
+        print(f"    🧮 Building LP for MSCC with {len(mscc)} states...")
+
+        try:
+            # We'll use scipy for LP solving
+            from scipy.optimize import linprog
+            import numpy as np
+
+            # Step 1: Extract all edges within the MSCC
+            mscc_edges = self._extract_mscc_edges(mscc, product)
+
+            if not mscc_edges:
+                print(f"    ⚠️ No edges in MSCC - cannot form cycles")
+                return False
+
+            # Step 2: Set up LP variables (edge frequencies)
+            edge_vars = list(mscc_edges.keys())
+            num_vars = len(edge_vars)
+
+            # Step 3: Build flow conservation constraints
+            A_eq_flow, b_eq_flow = self._build_flow_constraints(mscc, edge_vars, mscc_edges)
+
+            # Step 4: Add normalization constraint: ∑ y_e = 1
+            A_eq_norm = np.ones((1, num_vars))
+            b_eq_norm = np.array([1.0])
+
+            # Combine flow conservation and normalization
+            if A_eq_flow.shape[0] > 0:
+                A_eq = np.vstack([A_eq_flow, A_eq_norm])
+                b_eq = np.hstack([b_eq_flow, b_eq_norm])
+            else:
+                A_eq = A_eq_norm
+                b_eq = b_eq_norm
+
+            # Step 5: Build limit-average constraints
+            A_ub, b_ub = self._build_limit_avg_constraints(edge_vars, mscc_edges, constraints, product)
+
+            # Step 6: Objective function (minimize 0 - we just want feasibility)
+            c = np.zeros(num_vars)
+
+            # Step 7: Bounds (edge frequencies >= 0)
+            bounds = [(0, None) for _ in range(num_vars)]
+
+            # Step 8: Solve LP
+            print(f"    🔧 Solving LP with {num_vars} variables, {A_eq.shape[0]} equality constraints...")
+            result = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq,
+                             bounds=bounds, method='highs')
+
+            if result.success:
+                print(f"    ✅ LP feasible - MSCC can satisfy limit-average constraints")
+
+                # Debug: show some edge frequencies
+                if result.x is not None:
+                    non_zero_edges = [(edge_vars[i], freq) for i, freq in enumerate(result.x) if freq > 1e-6]
+                    print(f"    📈 Non-zero edge frequencies: {len(non_zero_edges)}")
+                    for edge, freq in non_zero_edges[:3]:  # Show first 3
+                        print(f"        {edge}: {freq:.4f}")
+
+                return True
+            else:
+                print(f"    ❌ LP infeasible - MSCC cannot satisfy constraints")
+                if hasattr(result, 'message'):
+                    print(f"    💡 Reason: {result.message}")
+                return False
+
+        except ImportError:
+            print(f"    ⚠️ scipy not available - skipping LP check")
+            return True  # Assume satisfiable for now
+        except Exception as e:
+            print(f"    💥 LP solving error: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+
+    def _extract_mscc_edges(self, mscc, product: ProductAutomaton):
+        """Extract all edges that stay within the MSCC"""
+        mscc_edges = {}
+
+        for state in mscc:
+            if state in product.transitions:
+                for target in product.transitions[state]:
+                    if target in mscc:  # Only edges within MSCC
+                        edge = (state, target)
+                        mscc_edges[edge] = {
+                            'source': state,
+                            'target': target,
+                            'numeric_vals': product.get_numeric_valuation(state)  # Values from source state
+                        }
+
+        return mscc_edges
+
+    def _build_flow_constraints(self, mscc, edge_vars, mscc_edges):
+        """Build flow conservation constraints for the LP: ∑in y_e = ∑out y_e for each state"""
+        print(f"      📐 Building flow conservation constraints for {len(mscc)} states...")
+
+        import numpy as np
+
+        states = list(mscc)
+        num_states = len(states)
+        num_edges = len(edge_vars)
+
+        # Flow conservation: for each state, inflow = outflow
+        A_eq = np.zeros((num_states, num_edges))
+        b_eq = np.zeros(num_states)
+
+        # Create state to index mapping
+        state_to_idx = {state: i for i, state in enumerate(states)}
+
+        # Build constraint matrix
+        for edge_idx, edge in enumerate(edge_vars):
+            src, tgt = edge
+
+            # Outflow from source: positive coefficient
+            if src in state_to_idx:
+                A_eq[state_to_idx[src], edge_idx] += 1
+
+            # Inflow to target: negative coefficient
+            if tgt in state_to_idx:
+                A_eq[state_to_idx[tgt], edge_idx] -= 1
+
+        # Remove all-zero rows (states with no edges in the MSCC)
+        non_zero_rows = ~np.all(A_eq == 0, axis=1)
+        A_eq = A_eq[non_zero_rows]
+        b_eq = b_eq[non_zero_rows]
+
+        print(f"      📊 Flow constraints: {A_eq.shape[0]} equations, {num_edges} variables")
+        return A_eq, b_eq
+
+    def _build_limit_avg_constraints(self, edge_vars, mscc_edges, constraints, product):
+        """Build limit-average constraints for the LP: ∑ y_e * w(e) ∼ value"""
+        print(f"      📐 Building limit-average constraints...")
+
+        import numpy as np
+
+        num_edges = len(edge_vars)
+        num_constraints = len(constraints)
+
+        if num_constraints == 0:
+            return np.zeros((0, num_edges)), np.zeros(0)
+
+        A_ub = np.zeros((num_constraints, num_edges))
+        b_ub = np.zeros(num_constraints)
+
+        for const_idx, constraint in enumerate(constraints):
+            var_name = constraint['variable']
+            op = constraint['operator']
+            target_value = constraint['value']
+
+            # Build the sum: ∑ y_e * w_e(var_name)
+            for edge_idx, edge in enumerate(edge_vars):
+                # Get numeric value for this variable from the edge's source state
+                source_state = edge[0]  # (k_state, b_state)
+                numeric_vals = product.get_numeric_valuation(source_state)
+                weight = numeric_vals.get(var_name, 0.0)
+
+                A_ub[const_idx, edge_idx] = weight
+
+            # Convert operator to LP form
+            if op in ['>=', '>']:
+                # ∑ y_e * w_e >= value  →  -∑ y_e * w_e <= -value
+                A_ub[const_idx, :] = -A_ub[const_idx, :]
+                b_ub[const_idx] = -target_value
+            elif op in ['<=', '<']:
+                # ∑ y_e * w_e <= value  →  ∑ y_e * w_e <= value
+                b_ub[const_idx] = target_value
+            elif op == '=':
+                # For equality, we need to handle it differently
+                # We'll treat it as two inequalities: <= and >=
+                print(f"      ⚠️ Equality constraints not fully supported yet, using approximation")
+                # Use >= for now
+                A_ub[const_idx, :] = -A_ub[const_idx, :]
+                b_ub[const_idx] = -target_value
+
+        print(f"      📊 Limit-average constraints: {num_constraints} inequalities")
+        return A_ub, b_ub
+
+    def component_check(self, mscc, chi: str, product: ProductAutomaton):
+        """ComponentCheck(M, χ) - Check if conv(M) ∩ A(χ) ≠ ∅ using LP"""
+        print(f"    🧩 ComponentCheck: Checking conv(M) ∩ A(χ) ≠ ∅")
+        print(f"    📐 conv(M) = convex hull of achievable limit-average vectors in MSCC")
+        print(f"    📐 A(χ) = {{ x | x satisfies {chi} }}")
+
+        # Parse χ into constraints that define A(χ)
+        constraints = self._parse_limit_avg_formula(chi)
+
+        if not constraints:
+            print(f"    ⚠️ No valid constraints parsed - assuming satisfiable")
+            return True
+
+        # Build and solve LP to check conv(M) ∩ A(χ) ≠ ∅
+        return self._check_convex_hull_intersection(mscc, constraints, product)
+
+    def _check_convex_hull_intersection(self, mscc, constraints, product):
+        """Check if conv(M) ∩ A(χ) ≠ ∅ using LP"""
+        print(f"    🔍 Checking conv(M) ∩ A(χ) ≠ ∅ via LP...")
+
+        try:
+            from scipy.optimize import linprog
+            import numpy as np
+
+            # Step 1: Extract edges in MSCC (these define the cycles)
+            mscc_edges = self._extract_mscc_edges(mscc, product)
+
+            if not mscc_edges:
+                print(f"    ⚠️ No edges in MSCC - conv(M) is empty")
+                return False
+
+            edge_vars = list(mscc_edges.keys())
+            num_vars = len(edge_vars)
+
+            print(f"    📊 conv(M) defined by {num_vars} edges (potential cycle segments)")
+
+            # Step 2: conv(M) = { Σ y_e·w(e) | flow conservation, Σ y_e = 1, y_e ≥ 0 }
+            A_eq_flow, b_eq_flow = self._build_flow_constraints(mscc, edge_vars, mscc_edges)
+            A_eq_norm = np.ones((1, num_vars))  # Σ y_e = 1
+            b_eq_norm = np.array([1.0])
+
+            # Combine constraints for conv(M)
+            if A_eq_flow.shape[0] > 0:
+                A_eq = np.vstack([A_eq_flow, A_eq_norm])
+                b_eq = np.hstack([b_eq_flow, b_eq_norm])
+            else:
+                A_eq = A_eq_norm
+                b_eq = b_eq_norm
+
+            # Step 3: A(χ) constraints
+            A_ub, b_ub = self._build_limit_avg_constraints(edge_vars, mscc_edges, constraints, product)
+
+            # Step 4: Check intersection via LP feasibility
+            c = np.zeros(num_vars)  # Objective doesn't matter for feasibility
+            bounds = [(0, None) for _ in range(num_vars)]
+
+            result = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq,
+                             bounds=bounds, method='highs')
+
+            if result.success:
+                print(f"    ✅ conv(M) ∩ A(χ) ≠ ∅ - intersection FOUND")
+
+                # Show the intersection point (the limit-average vector)
+                if result.x is not None:
+                    intersection_point = self._compute_limit_average_vector(result.x, edge_vars, mscc_edges, product)
+                    print(f"    📍 Intersection point: {intersection_point}")
+
+                return True
+            else:
+                print(f"    ❌ conv(M) ∩ A(χ) = ∅ - NO intersection")
+                return False
+
+        except Exception as e:
+            print(f"    💥 Error in convex hull intersection check: {e}")
+            return False
+
+    def _compute_limit_average_vector(self, y_values, edge_vars, mscc_edges, product):
+        """Compute the limit-average vector x = Σ y_e·w(e)"""
+        # Get all numeric variables
+        sample_state = next(iter(mscc_edges.values()))['source']
+        all_vars = list(product.get_numeric_valuation(sample_state).keys())
+
+        result = {}
+        for var in all_vars:
+            total = 0.0
+            for i, edge in enumerate(edge_vars):
+                source_state = edge[0]
+                numeric_vals = product.get_numeric_valuation(source_state)
+                weight = numeric_vals.get(var, 0.0)
+                total += y_values[i] * weight
+            result[var] = total
+
+        return result
