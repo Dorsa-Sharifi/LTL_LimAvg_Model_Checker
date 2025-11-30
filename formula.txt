@@ -1,0 +1,1 @@
+LimInfAvg(x) > 2.0 ∧ LimInfAvg(z) < 1.5

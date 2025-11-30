@@ -1,17 +1,16 @@
-import base64
-
 import numpy as np
 import ply.lex as lex
 import ply.yacc as yacc
 from itertools import product as itertools_product
 import subprocess
 import json
-from typing import Set, List, Tuple, Dict, Optional, Any
+from typing import Set, List, Tuple, Dict, Any
 from scipy.spatial import ConvexHull
 from fractions import Fraction
-import time
 from core.QuantitativeKripkeStructure import QuantitativeKripkeStructure
 
+addrOfZ3Solver = "/home/otebook/z3_lp_solver.py"
+addrOfSpotLib = "/home/otebook/ltl_to_nbw.py"
 
 class LTLimProcessor:
     def __init__(self):
@@ -739,7 +738,7 @@ class LTLimProcessor:
 class WSLSpotConverter:
     """Uses Spot installed on WSL from Windows"""
 
-    def __init__(self, wsl_script_path="/home/otebook/ltl_to_nbw.py"):
+    def __init__(self, wsl_script_path=addrOfSpotLib):
         # Replace 'username' with your actual WSL username
         self.wsl_script_path = wsl_script_path
         self._test_wsl_connection()
@@ -808,7 +807,7 @@ class WSLSpotConverter:
 class WSLZ3Solver:
     """Uses Z3 installed on WSL from Windows"""
 
-    def __init__(self, wsl_script_path="/home/otebook/z3_lp_solver.py"):
+    def __init__(self, wsl_script_path=addrOfZ3Solver):
         self.wsl_script_path = wsl_script_path
         self._test_wsl_connection()
 
@@ -862,7 +861,7 @@ class WSLZ3Solver:
 class WSLSpotLTLimProcessor(LTLimProcessor):
     """Enhanced processor using WSL Spot for NBW conversion"""
 
-    def __init__(self, wsl_script_path="/home/otebook/ltl_to_nbw.py"):
+    def __init__(self, wsl_script_path=addrOfSpotLib):
         super().__init__()
         self.wsl_converter = WSLSpotConverter(wsl_script_path)
 
@@ -1414,7 +1413,7 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
     def __init__(self, wsl_script_path, qks: QuantitativeKripkeStructure = None):
         super().__init__(wsl_script_path)
         self.qks = qks or self._create_example_qks()
-        self.z3_solver = WSLZ3Solver("/home/otebook/z3_lp_solver.py")  # Z3 in WSL
+        self.z3_solver = WSLZ3Solver(addrOfZ3Solver)  # Z3 in WSL
 
     def _create_example_qks(self):
         """Create an example Quantitative Kripke structure for testing"""
@@ -1640,63 +1639,3 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
             dfs(init_state)
 
         return reachable_accepting
-
-# Test cases
-if __name__ == "__main__":
-    test_formula = "LimInfAvg(x) > 2.0 ∧ LimInfAvg(z) < 1.5"
-    print(f"Testing with: {test_formula}")
-    try:
-        qks = QuantitativeKripkeStructure(
-            states={'s0', 's1', 's2', 's3'},
-            init_state='s0',
-            edges={
-                ('s0', 's1'), ('s0', 's2'),
-                ('s1', 's0'), ('s1', 's2'), ('s1', 's3'),
-                ('s2', 's1'), ('s2', 's3'),
-                ('s3', 's0'), ('s3', 's2')
-            },
-            boolean_vars={'p', 'q', 'r'},
-            logical_formulas={
-                's0': {'p'},
-                's1': {'q'},
-                's2': {'p', 'r'},
-                's3': {'q', 'r'}
-            },
-            numeric_values={
-                's0': {'x': 1.0, 'y': 2.0, 'z': 0.5},
-                's1': {'x': 3.0, 'y': 1.0, 'z': 1.5},
-                's2': {'x': 2.0, 'y': 3.0, 'z': 0.8},
-                's3': {'x': 4.0, 'y': 0.5, 'z': 2.0}
-            }
-        )
-        processor = EnhancedLTLimProcessor("/home/otebook/ltl_to_nbw.py", qks)
-        print("\nTesting pipeline...")
-        phase1_results = processor.complete_pipeline_with_product(test_formula)
-        if phase1_results:
-            print(f"\n-Pipeline completed successfully!")
-            print(f"-Results summary:")
-
-            for i, (chi, xi, product, result) in enumerate(phase1_results):
-                print(f"\n--- Disjunct {i + 1} Summary ---")
-                print(f"   χ (limit-average): {chi}")
-                print(f"   ξ (LTL): {xi}")
-                print(f"   Fair MSCCs exist: {result['fair_msccs_exist']}")
-                print(f"   Number of fair MSCCs: {result['fair_mscc_count']}")
-                print(f"   Limit-average satisfiable: {result.get('limit_avg_satisfiable', 'N/A')}")
-
-                if result.get('limit_avg_satisfiable', False):
-                    print("-STATUS: SATISFIABLE - Fair computation exists!")
-                else:
-                    print("-STATUS: NOT SATISFIABLE - No fair computation")
-
-        else:
-            print("-Pipeline failed")
-
-    except Exception as e:
-        print(f"-TEST ERROR: {e}")
-        import traceback
-
-        traceback.print_exc()
-    print("\n" + "=" * 100)
-    print("TEST COMPLETE")
-    print("=" * 100)
