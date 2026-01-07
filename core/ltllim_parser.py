@@ -9,8 +9,14 @@ from scipy.spatial import ConvexHull
 from fractions import Fraction
 from core.QuantitativeKripkeStructure import QuantitativeKripkeStructure
 
-addrOfZ3Solver = "/home/otebook/z3_lp_solver.py"
-addrOfSpotLib = "/home/otebook/ltl_to_nbw.py"
+from core.spot_converter import SpotConverter
+from core.z3_solver import Z3Solver
+from core.config import get_config, MultiOSConfig
+from core.platform_detector import PLATFORM, PLATFORM_STR, print_platform_info
+
+WSLSpotConverter = SpotConverter
+WSLZ3Solver = Z3Solver
+
 
 class LTLimProcessor:
     def __init__(self):
@@ -175,8 +181,6 @@ class LTLimProcessor:
         if len(p) == 2:
             p[0] = p[1]
         elif p[1] == '(':
-            # Instead of creating a paren node, just return the inner formula
-            # This avoids unnecessary parentheses in the tree
             p[0] = p[2]
         elif p[1] in ['¬', '!', 'X', 'F', 'G']:
             p[0] = (p[1], p[2])
@@ -305,24 +309,20 @@ class LTLimProcessor:
                 return ('¬', tree)
 
             elif op in ['LimInfAvg', 'LimSupAvg']:
-                # Negate path assertion: ¬(LimXAvg(v) ≥ c) ≡ LimXAvg(v) < c
-                # But we need to return the same structure as the parser expects
-                old_op = tree[2]  # This is the comparison operator token
+                old_op = tree[2]
                 neg_ops = {'>=': '<', '<=': '>', '>': '<=', '<': '>=', '=': '!='}
                 new_op = neg_ops.get(old_op, f'¬{old_op}')
 
-                # Return in the same format: (type, variable, operator, value)
                 return (tree[0], tree[1], new_op, tree[3])
 
             elif op == 'assert':
-                # Negate comparison operators
                 old_op = tree[2]
                 neg_ops = {'>=': '<', '<=': '>', '>': '<=', '<': '>=', '=': '!='}
                 new_op = neg_ops.get(old_op, f'¬{old_op}')
                 return ('assert', tree[1], new_op, tree[3])
 
             elif op == '¬':
-                return tree[1]  # Double negation
+                return tree[1]
 
             elif op == 'X':
                 return 'X', self.negate_formula(tree[1])
@@ -340,11 +340,9 @@ class LTLimProcessor:
                 return '∧', self.negate_formula(tree[1]), self.negate_formula(tree[2])
 
             elif op == '→':
-                # ¬(φ → ψ) ≡ φ ∧ ¬ψ
                 return '∧', tree[1], self.negate_formula(tree[2])
 
             elif op == '↔':
-                # ¬(φ ↔ ψ) ≡ (φ ∧ ¬ψ) ∨ (¬φ ∧ ψ)
                 return ('∨',
                         ('∧', tree[1], self.negate_formula(tree[2])),
                         ('∧', self.negate_formula(tree[1]), tree[2]))
@@ -358,17 +356,15 @@ class LTLimProcessor:
             elif op == 'paren':
                 return 'paren', self.negate_formula(tree[1])
 
-            else:  # Arithmetic operators
+            else:
                 return tree
 
         return tree
 
     def tree_to_string(self, tree):
-        """Convert parse tree to string - always safe parentheses - FIXED"""
         if tree is None:
             return ""
 
-        # Handle truth values
         if tree in ['T', 'true']:
             return "true"
         elif tree in ['F', 'false']:
@@ -384,9 +380,7 @@ class LTLimProcessor:
             elif op == 'real':
                 return str(tree[1])
             elif op in ['LimInfAvg', 'LimSupAvg']:
-                # FIX: Handle the negated operators properly
                 operator = tree[2]
-                # Convert internal representation back to proper syntax
                 if operator == '<=':
                     operator = '<='
                 elif operator == '>=':
@@ -420,20 +414,15 @@ class LTLimProcessor:
             return str(tree)
 
     def _needs_parentheses(self, expression):
-        """Determine if an expression needs parentheses"""
-        # Never put parentheses around truth values
         if expression in ['true', 'false']:
             return False
 
-        # Never put parentheses around simple propositions
         if expression.isalpha() and expression not in ['true', 'false']:
             return False
 
-        # Put parentheses around binary operations
         if any(op in expression for op in [' ∧ ', ' ∨ ', ' → ', ' ↔ ', ' U ', ' R ']):
             return True
 
-        # Put parentheses around expressions with spaces (complex expressions)
         if ' ' in expression:
             return True
 
@@ -441,26 +430,21 @@ class LTLimProcessor:
 
 
     def _needs_parentheses_for_binary(self, expression, parent_op):
-        """Check if a binary expression needs parentheses given the parent operator"""
         if expression in ['true', 'false']:
             return False
 
-        # If it's a simple atom, no parentheses needed
         if not any(char in expression for char in [' ', '∧', '∨', '→', '↔', 'U', 'R']):
             return False
 
-        # Operator precedence rules
         precedence = {
             'U': 1, 'R': 1,
             '→': 2, '↔': 2,
             '∧': 3, '∨': 3
         }
 
-        # Extract the main operator from the expression if it's binary
         main_op = None
         if expression.startswith('(') and expression.endswith(')'):
             inner = expression[1:-1]
-            # Try to find the main operator
             for op in [' U ', ' R ', ' → ', ' ↔ ', ' ∧ ', ' ∨ ']:
                 if op in inner:
                     main_op = op.strip()
@@ -473,7 +457,6 @@ class LTLimProcessor:
 
 
     def extract_limit_avg_assertions(self, tree):
-        """Extract all limit-average assertions from the parse tree"""
         assertions = []
 
         def traverse(node):
@@ -490,10 +473,8 @@ class LTLimProcessor:
 
 
     def build_boolean_combination(self, assertions, truth_values):
-        """Build the Boolean combination of limit-average assertions"""
         if not assertions:
-            return "T"  # No assertions, always true
-
+            return "T"
         terms = []
         for i, (assertion, truth_value) in enumerate(zip(assertions, truth_values)):
             assertion_str = self.tree_to_string(assertion)
@@ -508,13 +489,10 @@ class LTLimProcessor:
             return " ∧ ".join(f"({term})" for term in terms)
 
     def process_formula_negation(self, formula_psi):
-        """Complete pipeline: Given formula ψ, process ¬ψ and detach limit-average assertions"""
-
         print("=" * 80)
         print(f"PROCESSING FORMULA ψ: {formula_psi}")
         print("=" * 80)
 
-        # Step 1: Parse the original formula ψ
         print("Step 1: Parsing original formula ψ")
         tree_psi = self.parse(formula_psi)
         if tree_psi is None:
@@ -523,13 +501,11 @@ class LTLimProcessor:
         parsed_psi = self.tree_to_string(tree_psi)
         print(f"Parsed ψ: {parsed_psi}")
 
-        # Step 2: Negate to get ϕ = ¬ψ
         print("\nStep 2: Negating formula to get ϕ = ¬ψ")
         tree_phi = self.negate_formula(tree_psi)
         formula_phi = self.tree_to_string(tree_phi)
         print(f"Negated formula ϕ: {formula_phi}")
 
-        # Step 3: Extract limit-average assertions from ϕ
         assertions = self.extract_limit_avg_assertions(tree_phi)
         print(f"\nStep 3: Found {len(assertions)} limit-average assertions in ϕ:")
         for i, assertion in enumerate(assertions):
@@ -537,25 +513,20 @@ class LTLimProcessor:
 
         if not assertions:
             print("No limit-average assertions found in ϕ. Formula is already standard LTL.")
-            # Return both disjuncts AND the negated formula
-            return [("true", formula_phi)], formula_phi  # Single disjunct with no limit-average part
+            return [("true", formula_phi)], formula_phi
 
-        # Step 4: Generate all possible truth assignments (2^n combinations)
         n = len(assertions)
         truth_assignments_list = list(itertools_product([True, False], repeat=n))
         print(f"\nStep 4: Generating {len(truth_assignments_list)} truth assignments")
 
-        # Step 5: Build the disjunction for ϕ
         disjuncts = []
         print("Step 5: Building disjuncts for ϕ:")
 
         for truth_values in truth_assignments_list:
-            # Build the LTL formula with assertions replaced by truth values
             ltl_formula_tree = self.replace_assertions_with_truth_values(tree_phi,
                                                                          list(zip(assertions, truth_values)))
             ltl_formula = self.tree_to_string(ltl_formula_tree)
 
-            # Build the Boolean combination of limit-average assertions
             limit_avg_formula = self.build_boolean_combination(assertions, truth_values)
 
             disjunct = (limit_avg_formula, ltl_formula)
@@ -563,16 +534,13 @@ class LTLimProcessor:
 
             print(f"  Disjunct: {limit_avg_formula} ∧ {ltl_formula}")
 
-        # Step 6: Return the final disjunction
         print(f"\nStep 6: Final disjunction has {len(disjuncts)} disjuncts")
         return disjuncts, formula_phi  # Always return both values
 
     def complete_pipeline_with_nbw(self, formula_psi):
-        """Complete pipeline with NBW conversion - DEBUG VERSION"""
         print("COMPLETE PIPELINE WITH NBW CONVERSION")
         print("=" * 80)
 
-        # Steps 1-6: Process formula and detach limit-average assertions
         try:
             print("DEBUG: Calling process_formula_negation...")
             disjuncts, negated_formula = self.process_formula_negation(formula_psi)
@@ -590,14 +558,12 @@ class LTLimProcessor:
         print("NBW CONVERSION STEP")
         print("=" * 80)
 
-        # Convert each LTL formula ξ to NBW using WSL Spot
         nbw_results = []
         for i, (chi, xi) in enumerate(disjuncts):
             print(f"\n--- Disjunct {i + 1} ---")
             print(f"χ (limit-average): {chi}")
             print(f"ξ (LTL): {xi}")
 
-            # Convert LTL to NBW
             print(f"DEBUG: Converting LTL to NBW for: {xi}")
             result = self.wsl_converter.ltl_to_nbw(xi)
             nbw_results.append((chi, xi, result))
@@ -608,9 +574,7 @@ class LTLimProcessor:
         return nbw_results
 
     def replace_assertions_with_truth_values(self, tree, truth_assignments):
-        """Replace limit-average assertions with truth values based on assignments WITH SIMPLIFICATION"""
         if not isinstance(tree, tuple):
-            # Convert old format to new format
             if tree == 'T':
                 return 'true'
             elif tree == 'F':
@@ -619,14 +583,12 @@ class LTLimProcessor:
 
         op = tree[0]
 
-        # If this is a limit-average assertion, replace with truth value
         if op in ['LimInfAvg', 'LimSupAvg']:
             for assertion, truth_value in truth_assignments:
                 if tree == assertion:
                     return 'true' if truth_value else 'false'
-            return tree  # Should not happen
+            return tree
 
-        # Recursively process children FIRST
         new_children = []
         for child in tree[1:]:
             if isinstance(child, tuple):
@@ -639,18 +601,15 @@ class LTLimProcessor:
             else:
                 new_children.append(child)
 
-        # Simplify Boolean expressions after replacement
         simplified_tree = (op,) + tuple(new_children)
         return self.simplify_boolean_expression(simplified_tree)
 
     def simplify_boolean_expression(self, tree):
-        """Simplify Boolean expressions after truth value substitution"""
         if not isinstance(tree, tuple):
             return tree
 
         op = tree[0]
 
-        # Handle unary operators
         if op == '¬':
             child = tree[1]
             if child == 'true':
@@ -658,219 +617,96 @@ class LTLimProcessor:
             elif child == 'false':
                 return 'true'
             elif isinstance(child, tuple) and child[0] == '¬':
-                return self.simplify_boolean_expression(child[1])  # Double negation
+                return self.simplify_boolean_expression(child[1])
             return tree
 
-        # Handle binary operators
         if op in ['∧', '∨', '→', '↔']:
             left = tree[1]
             right = tree[2]
 
-            # Simplify children first
             left_simple = self.simplify_boolean_expression(left) if isinstance(left, tuple) else left
             right_simple = self.simplify_boolean_expression(right) if isinstance(right, tuple) else right
 
-            # Boolean simplification rules
             if op == '∧':
-                # true ∧ φ ≡ φ
                 if left_simple == 'true':
                     return right_simple
-                # φ ∧ true ≡ φ
                 if right_simple == 'true':
                     return left_simple
-                # false ∧ φ ≡ false
                 if left_simple == 'false' or right_simple == 'false':
                     return 'false'
 
             elif op == '∨':
-                # true ∨ φ ≡ true
                 if left_simple == 'true' or right_simple == 'true':
                     return 'true'
-                # false ∨ φ ≡ φ
                 if left_simple == 'false':
                     return right_simple
-                # φ ∨ false ≡ φ
                 if right_simple == 'false':
                     return left_simple
 
             elif op == '→':
-                # true → φ ≡ φ
                 if left_simple == 'true':
                     return right_simple
-                # false → φ ≡ true
                 if left_simple == 'false':
                     return 'true'
-                # φ → true ≡ true
                 if right_simple == 'true':
                     return 'true'
-                # φ → false ≡ ¬φ
                 if right_simple == 'false':
                     return ('¬', left_simple) if not isinstance(left_simple, str) or left_simple not in ['true',
                                                                                                          'false'] else 'true'
 
             elif op == '↔':
-                # true ↔ φ ≡ φ
                 if left_simple == 'true':
                     return right_simple
-                # φ ↔ true ≡ φ
                 if right_simple == 'true':
                     return left_simple
-                # false ↔ φ ≡ ¬φ
                 if left_simple == 'false':
                     return ('¬', right_simple) if not isinstance(right_simple, str) or right_simple not in ['true',
                                                                                                             'false'] else 'true'
-                # φ ↔ false ≡ ¬φ
                 if right_simple == 'false':
                     return ('¬', left_simple) if not isinstance(left_simple, str) or left_simple not in ['true',
                                                                                                          'false'] else 'true'
 
-            # If no simplification applied, return the simplified children
             if left_simple != left or right_simple != right:
                 return (op, left_simple, right_simple)
 
-        # For temporal operators, just simplify children but keep structure
         if op in ['X', 'F', 'G', 'U', 'R']:
             simplified_children = [self.simplify_boolean_expression(child) if isinstance(child, tuple) else child
                                    for child in tree[1:]]
             return (op,) + tuple(simplified_children)
 
         return tree
-class WSLSpotConverter:
-    """Uses Spot installed on WSL from Windows"""
-
-    def __init__(self, wsl_script_path=addrOfSpotLib):
-        # Replace 'username' with your actual WSL username
-        self.wsl_script_path = wsl_script_path
-        self._test_wsl_connection()
-
-    def _test_wsl_connection(self):
-        """Test if WSL is accessible"""
-        try:
-            result = subprocess.run('wsl echo "WSL connected"',
-                                    shell=True, capture_output=True, text=True)
-            if result.returncode == 0:
-                print("✓ WSL connection successful")
-            else:
-                print("✗ WSL connection failed")
-        except Exception as e:
-            print(f"✗ WSL test failed: {e}")
-
-    def ltl_to_nbw(self, ltl_formula):
-        """Call WSL Spot script to convert LTL to NBW"""
-        try:
-            # Escape the formula for command line
-            escaped_formula = ltl_formula.replace('"', '\\"')
-
-            # Build WSL command
-            cmd = f'wsl python3 {self.wsl_script_path} "{escaped_formula}"'
-            print(f"Executing: {cmd}")
-
-            # Execute command
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
-
-            if result.returncode == 0:
-                return json.loads(result.stdout)
-            else:
-                return {'success': False, 'error': result.stderr}
-
-        except subprocess.TimeoutExpired:
-            return {'success': False, 'error': 'Conversion timeout'}
-        except Exception as e:
-            return {'success': False, 'error': str(e)}
-
-    def print_automaton_details(self, result, formula):
-        """Print automaton details"""
-        if not result.get('success', False):
-            print(f"Failed to convert: {formula}")
-            print(f"   Error: {result.get('error', 'Unknown error')}")
-            return
-
-        print(f"\n{'=' * 60}")
-        print(f"LTL Formula: {formula}")
-        if 'formula_used' in result:
-            print(f"   (Converted to: {result['formula_used']})")
-        print(f"{'=' * 60}")
-        print(f"States: {result['states']}")
-        print(f"Edges: {result['edges']}")
-        print(f"Acceptance: {result['acceptance']}")
-        print(f"Deterministic: {result['is_deterministic']}")
-
-        # Save HOA to file
-        if 'hoa_format' in result:
-            safe_name = formula.replace(' ', '_').replace('&', 'and').replace('|', 'or')
-            filename = f"automaton_{safe_name}.hoa"
-            with open(filename, 'w', encoding='utf-8') as f:
-                f.write(result['hoa_format'])
-            print(f"HOA format saved to: {filename}")
-
-
-class WSLZ3Solver:
-    """Uses Z3 installed on WSL from Windows"""
-
-    def __init__(self, wsl_script_path=addrOfZ3Solver):
-        self.wsl_script_path = wsl_script_path
-        self._test_wsl_connection()
-
-    def _test_wsl_connection(self):
-        """Test WSL connection"""
-        try:
-            result = subprocess.run('wsl echo "Z3 WSL connected"',
-                                    shell=True, capture_output=True, text=True)
-            if result.returncode == 0:
-                print("Z3 WSL connection successful")
-            else:
-                print("Z3 WSL connection failed")
-        except Exception as e:
-            print(f"Z3 WSL test failed: {e}")
-
-    def check_feasibility(self, cycle_vectors, variables, limit_avg_formula):
-        """Send LP problem to WSL Z3 solver - ESCAPE SPECIAL CHARS"""
-        try:
-            # Escape special command line characters
-            escaped_formula = (limit_avg_formula
-                               .replace('<', '^<')
-                               .replace('>', '^>')
-                               .replace('&', '^&')
-                               .replace('|', '^|'))
-
-            problem_data = {
-                'cycle_vectors': cycle_vectors,
-                'variables': variables,
-                'limit_avg_formula': escaped_formula
-            }
-
-            json_str = json.dumps(problem_data).replace('"', '\\"')
-
-            cmd = f'wsl /home/otebook/.local/share/pipx/venvs/z3-solver/bin/python /home/otebook/z3_lp_solver.py "{json_str}"'
-
-            print(f"Executing Z3 LP with escaped formula")
-
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
-
-            if result.returncode == 0:
-                return json.loads(result.stdout)
-            else:
-                print(f"Z3 stderr: {result.stderr}")
-                return {'success': False, 'error': result.stderr}
-
-        except Exception as e:
-            return {'success': False, 'error': str(e)}
-
-
 
 class WSLSpotLTLimProcessor(LTLimProcessor):
-    """Enhanced processor using WSL Spot for NBW conversion"""
-
-    def __init__(self, wsl_script_path=addrOfSpotLib):
+    def __init__(self, script_path_or_config=None):
         super().__init__()
-        self.wsl_converter = WSLSpotConverter(wsl_script_path)
+
+        if script_path_or_config is None:
+            self.config = get_config()
+            self.wsl_converter = SpotConverter(self.config)
+
+        elif isinstance(script_path_or_config, str) and not script_path_or_config.endswith('.json'):
+            from config import MultiOSConfig
+            self.config = MultiOSConfig()
+            self.config.set_path('spot_script', script_path_or_config)
+            self.wsl_converter = SpotConverter(self.config)
+            print(f"Note: Using script path: {script_path_or_config}")
+            print(f"      Consider using config file instead for full multi-OS support")
+
+        elif isinstance(script_path_or_config, str) and script_path_or_config.endswith('.json'):
+            self.config = get_config(script_path_or_config)
+            self.wsl_converter = SpotConverter(self.config)
+
+        else:
+            self.config = script_path_or_config
+            self.wsl_converter = SpotConverter(self.config)
+
+        from core.platform_detector import PLATFORM_STR
+        print(f"✓ LTL Processor initialized on {PLATFORM_STR}")
 
     def complete_pipeline_with_nbw(self, formula_psi):
-        """Complete pipeline with NBW conversion"""
         print("COMPLETE PIPELINE WITH NBW CONVERSION")
         print("=" * 80)
 
-        # Your existing steps 1-6
         disjuncts, negated_formula = self.process_formula_negation(formula_psi)
 
         if not disjuncts:
@@ -886,7 +722,6 @@ class WSLSpotLTLimProcessor(LTLimProcessor):
             print(f"χ (limit-average): {chi}")
             print(f"ξ (LTL): {xi}")
 
-            # Convert LTL to NBW
             result = self.wsl_converter.ltl_to_nbw(xi)
             nbw_results.append((chi, xi, result))
 
@@ -894,13 +729,7 @@ class WSLSpotLTLimProcessor(LTLimProcessor):
 
         return nbw_results
 
-
-# =============================================================================
-# PRODUCT CONSTRUCTION CLASSES - ADD THESE TO YOUR EXISTING FILE
-# =============================================================================
-
 class NBWState:
-    """Represents a state in the NBW"""
 
     def __init__(self, name, labels=None, is_initial=False, is_accepting=False):
         self.name = name
@@ -919,24 +748,22 @@ class NBWState:
 
 
 class NBW:
-    """Nondeterministic Büchi Automaton"""
 
     def __init__(self, hoa_string=None):
         self.states = set()
         self.initial_states = set()
-        self.transitions = {}  # dict: (state, symbol) -> set of next states
+        self.transitions = {}
         self.accepting_states = set()
 
         if hoa_string:
             self._from_hoa(hoa_string)
 
     def _from_hoa(self, hoa_string):
-        """Initialize from HOA format string"""
         lines = hoa_string.strip().split('\n')
 
         states_dict = {}
         current_state = None
-        aps = []  # Atomic propositions
+        aps = []
 
         for line in lines:
             line = line.strip()
@@ -958,13 +785,11 @@ class NBW:
                     self.initial_states.add(states_dict[state_name])
 
             elif line.startswith('AP:'):
-                # Parse atomic propositions: AP: 2 "p" "q"
                 parts = line.split()
                 num_aps = int(parts[1])
                 aps = [ap.strip('"') for ap in parts[2:2 + num_aps]]
 
             elif line.startswith('Acceptance:'):
-                # We assume Büchi acceptance
                 pass
 
             elif line.startswith('State:'):
@@ -973,10 +798,9 @@ class NBW:
                 state_name = f"b{state_id}"
                 current_state = states_dict.get(state_name, NBWState(state_name))
 
-                # Check if accepting
                 if '{' in line and '}' in line:
                     acc_part = line[line.find('{'):line.find('}') + 1]
-                    if '0' in acc_part:  # Büchi acceptance condition
+                    if '0' in acc_part:
                         current_state.is_accepting = True
                         self.accepting_states.add(current_state)
 
@@ -984,30 +808,24 @@ class NBW:
                 if current_state is None:
                     continue
 
-                # Parse label and target
                 label_part, target_part = line.split(']')
                 label_str = label_part[1:].strip()
                 target_id = target_part.strip()
                 target_state = states_dict.get(f"b{target_id}", NBWState(f"b{target_id}"))
 
-                # Convert label to set of propositions
                 symbol = self._parse_hoa_label(label_str, aps)
 
-                # Add transition
                 key = (current_state, frozenset(symbol))
                 if key not in self.transitions:
                     self.transitions[key] = set()
                 self.transitions[key].add(target_state)
 
-                # Ensure target state is in states
                 self.states.add(target_state)
 
     def _parse_hoa_label(self, label_str, aps):
-        """Parse HOA label string into set of propositions"""
-        if label_str == 't':  # true - all propositions can be anything
+        if label_str == 't':
             return set()
         else:
-            # Simple case: [0], [1], [01], etc.
             symbols = set()
             for i, char in enumerate(label_str):
                 if i < len(aps) and char == '1':
@@ -1026,58 +844,46 @@ class NBW:
 
 
 class ProductAutomaton:
-    """Product K × Aξ = (∅, V, S×Q, (sin,qin), R, L, S×α) as defined in the paper"""
-
     def __init__(self, qks: QuantitativeKripkeStructure, buchi_automaton: NBW, propositions: Set[str]):
         self.qks = qks
         self.buchi = buchi_automaton
-        self.propositions = propositions  # Set P from the definition
-        self.states = set()  # S × Q
-        self.initial_states = set()  # (sin, qin)
-        self.transitions = {}  # R: (s,q) -> set of (s',q')
-        self.accepting_states = set()  # S × α
-        self.variables = qks.V  # V from QKS
+        self.propositions = propositions
+        self.states = set()
+        self.initial_states = set()
+        self.transitions = {}
+        self.accepting_states = set()
+        self.variables = qks.V
 
         self._build_product()
 
     def _build_product(self):
-        """Build the product automaton K × Aξ according to the formal definition"""
         print("Building product automaton K × Aξ according to formal definition...")
 
-        # Create product states: S × Q
         for k_state in self.qks.states:
             for b_state in self.buchi.states:
                 product_state = (k_state, b_state)
                 self.states.add(product_state)
 
-                # Check if this is an initial state: (sin, qin)
                 if (k_state == self.qks.init_state and
                         b_state in self.buchi.initial_states):
                     self.initial_states.add(product_state)
 
-                # Check if this is an accepting state: S × α
                 if b_state.is_accepting:
                     self.accepting_states.add(product_state)
 
-        # Build transitions R according to: R(s,q, s',q') iff R(s,s') and q' ∈ δ(q, [[P]]s)
         for (k_state, b_state) in self.states:
-            # Get the Boolean valuation for state s: [[P]]s
             bool_valuation = self.qks.get_boolean_valuation(k_state)
 
-            # Extract the set of true propositions in state s: {p ∈ P | [[p]]s = true}
             true_propositions = {prop for prop in self.propositions if bool_valuation.get(prop, False)}
 
-            # Find all valid buchi transitions: q' ∈ δ(q, [[P]]s)
             valid_b_transitions = []
             for (from_b, symbol), to_states in self.buchi.transitions.items():
                 if from_b == b_state:
-                    # Check if the buchi transition symbol matches the true propositions
                     if symbol.issubset(true_propositions):
                         valid_b_transitions.extend(to_states)
 
-            # For each Kripke transition R(s, s'), combine with valid buchi transitions
             for (src, dst) in self.qks.edges:
-                if src == k_state:  # This is R(s, s')
+                if src == k_state:
                     for b_next in valid_b_transitions:
                         product_next = (dst, b_next)
                         key = (k_state, b_state)
@@ -1088,18 +894,15 @@ class ProductAutomaton:
         print(f"Product built according to formal definition:")
         print(f"  States (S×Q): {len(self.states)}")
         print(f"  Initial states: {len(self.initial_states)}")
-        # for boo in range(len(self.initial_states)):
         print(self.initial_states)
         print(f"  Accepting states (S×α): {len(self.accepting_states)}")
         print(f"  Transitions: {sum(len(t) for t in self.transitions.values())}")
 
     def get_numeric_valuation(self, product_state):
-        """Get numeric valuation: [[v]]_(s,q) = [[v]]_s for every v ∈ V"""
         qks_state, _ = product_state
         return self.qks.get_numeric_valuation(qks_state)
 
     def get_boolean_valuation(self, product_state):
-        """Get boolean valuation for the product state"""
         qks_state, _ = product_state
         return self.qks.get_boolean_valuation(qks_state)
 
@@ -1107,7 +910,6 @@ class ProductAutomaton:
         return f"ProductAutomaton(S×Q: {len(self.states)}, initial: {len(self.initial_states)}, S×α: {len(self.accepting_states)})"
 
     def find_msccs(self) -> List[Set[Any]]:
-        """Find all Maximal Strongly Connected Components using Tarjan's algorithm"""
         index = 0
         indices = {}
         lowlinks = {}
@@ -1123,18 +925,14 @@ class ProductAutomaton:
             stack.append(state)
             on_stack.add(state)
 
-            # Consider successors of state
             if state in self.transitions:
                 for successor in self.transitions[state]:
                     if successor not in indices:
-                        # Successor has not yet been visited; recurse on it
                         strongconnect(successor)
                         lowlinks[state] = min(lowlinks[state], lowlinks[successor])
                     elif successor in on_stack:
-                        # Successor is in stack and hence in current SCC
                         lowlinks[state] = min(lowlinks[state], indices[successor])
 
-            # If state is a root node, pop the stack and generate an SCC
             if lowlinks[state] == indices[state]:
                 scc = set()
                 while True:
@@ -1145,7 +943,6 @@ class ProductAutomaton:
                         break
                 msccs.append(scc)
 
-        # Start from all reachable states from initial states
         visited = set()
 
         def dfs(state):
@@ -1158,24 +955,20 @@ class ProductAutomaton:
                 for successor in self.transitions[state]:
                     dfs(successor)
 
-        # Start DFS from all initial states to find reachable MSCCs
         for init_state in self.initial_states:
             dfs(init_state)
 
         return msccs
 
     def check_fairness(self, mscc: Set[Any]) -> bool:
-        """Check if MSCC contains accepting states: M ∩ α ≠ ∅"""
         return any(state in self.accepting_states for state in mscc)
 
     def get_reachable_fair_msccs(self) -> List[Set[Any]]:
-        """Get all reachable MSCCs that are fair (M ∩ α ≠ ∅)"""
         all_msccs = self.find_msccs()
         fair_msccs = [mscc for mscc in all_msccs if self.check_fairness(mscc)]
         return fair_msccs
 
     def print_mscc_analysis(self):
-        """Print detailed analysis of MSCCs"""
         print("\n" + "=" * 60)
         print("MSCC ANALYSIS")
         print("=" * 60)
@@ -1192,9 +985,8 @@ class ProductAutomaton:
             print(f"\nMSCC {i + 1}: {status}")
             print(f"  Size: {len(mscc)} states")
 
-            # Show first few states
             states_list = list(mscc)
-            state_preview = states_list[:3]  # Show first 3 states
+            state_preview = states_list[:3]
             preview_str = ", ".join(str(s) for s in state_preview)
             if len(mscc) > 3:
                 preview_str += f", ... (+{len(mscc) - 3} more)"
@@ -1205,13 +997,11 @@ class ProductAutomaton:
                 print(f"  Accepting states in MSCC: {len(accepting_states)}")
 
     def find_simple_cycles_in_mscc(self, mscc: Set[Any]) -> List[List[Any]]:
-        """Find all simple cycles within an MSCC - FIXED with deduplication"""
         cycles = []
         visited = set()
 
         def dfs(path, current):
             if len(path) > 1 and current == path[0]:
-                # Found a cycle - normalize and check if unique
                 normalized_cycle = self._normalize_cycle(path.copy())
                 if normalized_cycle not in cycles:
                     cycles.append(normalized_cycle)
@@ -1237,20 +1027,16 @@ class ProductAutomaton:
         return cycles
 
     def _normalize_cycle(self, cycle: List[Any]) -> List[Any]:
-        """Normalize cycle by rotating to smallest element"""
         if not cycle:
             return cycle
 
-        # Find index of smallest element (by string representation)
         min_index = min(range(len(cycle)), key=lambda i: str(cycle[i]))
         return cycle[min_index:] + cycle[:min_index]
 
     def compute_cycle_values(self, cycle: List[Any]) -> Dict[str, float]:
-        """Compute the average value of each variable along a cycle - FIXED with rational precision"""
         if not cycle:
             return {}
 
-        # Use fractions for exact arithmetic to avoid floating-point issues
         sums = {var: Fraction(0) for var in self.variables}
         count = len(cycle)
 
@@ -1260,13 +1046,11 @@ class ProductAutomaton:
             for var in self.variables:
                 sums[var] += Fraction(str(numeric_vals.get(var, 0.0)))  # Convert to exact fraction
 
-        # Compute exact averages, then convert to float for compatibility
         averages = {var: float(sums[var] / count) for var in self.variables}
         return averages
 
     def deduplicate_cycle_vectors(self, cycle_values: List[Dict[str, float]], tolerance: float = 1e-9) -> List[
         Dict[str, float]]:
-        """Remove duplicate cycle vectors within tolerance"""
         unique_vectors = []
 
         for vec in cycle_values:
@@ -1283,7 +1067,6 @@ class ProductAutomaton:
         return unique_vectors
 
     def compute_mscc_convex_hull(self, mscc: Set[Any]) -> Tuple[List[Dict[str, float]], List[List[float]]]:
-        """Compute convex hull of all simple cycle values in an MSCC - FIXED"""
         print(f"  Computing convex hull for MSCC with {len(mscc)} states...")
 
         cycles = self.find_simple_cycles_in_mscc(mscc)
@@ -1292,17 +1075,14 @@ class ProductAutomaton:
         if not cycles:
             return [], []
 
-        # Compute value vectors for each cycle
         cycle_values = []
         for i, cycle in enumerate(cycles):
             values = self.compute_cycle_values(cycle)
             cycle_values.append(values)
 
-        # Deduplicate vectors
         unique_vectors = self.deduplicate_cycle_vectors(cycle_values)
 
-        # Convert to numerical points for convex hull computation
-        variable_list = sorted(self.variables)  # Fixed order for dimensions
+        variable_list = sorted(self.variables)
         points = []
         for vec in unique_vectors:
             point = [vec[var] for var in variable_list]
@@ -1313,9 +1093,8 @@ class ProductAutomaton:
             vec_str = ", ".join(f"{var}:{vec[var]:.3f}" for var in variable_list)
             print(f"      Vector {i + 1}: {{{vec_str}}}")
 
-        # Compute full-dimensional convex hull
         full_dim_hull = None
-        if len(unique_vectors) >= len(variable_list) + 1:  # Need n+1 points for n-dim hull
+        if len(unique_vectors) >= len(variable_list) + 1:
             try:
                 points_array = np.array(points)
                 full_dim_hull = ConvexHull(points_array)
@@ -1334,14 +1113,12 @@ class ProductAutomaton:
                 print(f"Full-dimensional convex hull failed: {e}")
                 full_dim_hull = None
 
-        # Also compute 2D visualization if we have at least 2 variables
         if len(variable_list) >= 2:
             self._plot_2d_convex_hull(unique_vectors, variable_list[:2])
 
         return unique_vectors, points
 
     def _plot_2d_convex_hull(self, cycle_values: List[Dict[str, float]], vars_to_plot: List[str]):
-        """2D visualization helper - FIXED"""
         try:
             if len(cycle_values) < 3:
                 return
@@ -1362,11 +1139,9 @@ class ProductAutomaton:
             print(f"2D convex hull visualization skipped: {e}")
 
     def analyze_mscc_value_region(self, mscc: Set[Any]) -> Dict[str, Any]:
-        """Complete value region analysis for an MSCC - FIXED"""
         print(f"\nVALUE REGION ANALYSIS FOR MSCC")
         print(f"   MSCC size: {len(mscc)} states")
 
-        # Get unique cycle vectors and convex hull
         unique_vectors, hull_points = self.compute_mscc_convex_hull(mscc)
 
         if not unique_vectors:
@@ -1378,7 +1153,6 @@ class ProductAutomaton:
                 'dimension': 0
             }
 
-        # Compute exact value ranges
         variable_list = sorted(self.variables)
         value_ranges = {}
         for var in variable_list:
@@ -1407,16 +1181,27 @@ class ProductAutomaton:
         print(f"   Convex hull computed in {len(variable_list)}D: [{', '.join(variable_list)}]")
 
         return result
-class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
-    """Enhanced processor with product construction - COMPLETELY FIXED"""
 
-    def __init__(self, wsl_script_path, qks: QuantitativeKripkeStructure = None):
-        super().__init__(wsl_script_path)
+
+class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
+
+    def __init__(self, config_path: str = None, qks: QuantitativeKripkeStructure = None):
+        from core.config import get_config
+        from core.z3_solver import Z3Solver
+
+        config = get_config(config_path)
+
+        super().__init__(config)
+
         self.qks = qks or self._create_example_qks()
-        self.z3_solver = WSLZ3Solver(addrOfZ3Solver)  # Z3 in WSL
+
+        self.z3_solver = Z3Solver(config)
+
+        from core.platform_detector import PLATFORM_STR, TOOL_STRATEGY
+        print(f"✓ Enhanced processor initialized on {PLATFORM_STR}")
+        print(f"✓ Tool strategy: {TOOL_STRATEGY}")
 
     def _create_example_qks(self):
-        """Create an example Quantitative Kripke structure for testing"""
         states = {'s0', 's1', 's2', 's3'}
         init_state = 's0'
         edges = {
@@ -1444,7 +1229,6 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
         )
 
     def build_product_for_disjunct(self, chi, xi, nbw_result):
-        """Build product K × Aξ for a single disjunct - DEBUG VERSION"""
         print(f"  DEBUG: Starting product build for ξ='{xi}'")
 
         if not nbw_result or not nbw_result.get('success', False):
@@ -1452,7 +1236,6 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
             return None
 
         try:
-            # Create NBW from HOA format
             hoa_string = nbw_result['hoa_format']
             print(f"  DEBUG: HOA string length: {len(hoa_string)}")
 
@@ -1462,7 +1245,6 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
             print(f"  DEBUG: About to create ProductAutomaton...")
             print(f"  DEBUG: ProductAutomaton type: {type(ProductAutomaton)}")
 
-            # FIX: Make sure we're calling the class constructor
             product = ProductAutomaton(
                 qks=self.qks,
                 buchi_automaton=buchi_automaton,
@@ -1479,10 +1261,8 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
             return None
 
     def _check_fair_computations(self, product: ProductAutomaton, chi: str):
-        """Check if product has fair computations using SCC analysis - PHASE 1, 2 & 3"""
         print(f"-Checking for fair computations satisfying: {chi}")
 
-        # Phase 1: MSCC analysis
         product.print_mscc_analysis()
         fair_msccs = product.get_reachable_fair_msccs()
 
@@ -1499,7 +1279,6 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
 
         print(f"-Phase 1: Found {len(fair_msccs)} fair MSCC(s)")
 
-        # Phase 2: Value region computation for each fair MSCC
         value_regions = []
         for i, mscc in enumerate(fair_msccs):
             print(f"\n-Phase 2: Analyzing value region for fair MSCC {i + 1}")
@@ -1521,7 +1300,6 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
             print(
                 f"-Phase 3 MSCC {i + 1}: Checking A(χ) ∩ conv(M) with {len(value_region['unique_vectors'])} cycle vectors")
 
-            # Call WSL Z3 solver
             lp_result = self.z3_solver.check_feasibility(
                 cycle_vectors=value_region['unique_vectors'],
                 variables=value_region['variables'],
@@ -1545,7 +1323,6 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
                 print(f"-Phase 3 MSCC {i + 1}: Z3 solver error - {lp_result.get('error', 'Unknown error')}")
                 phase3_results.append({'feasible': False, 'error': lp_result.get('error', 'Unknown error')})
 
-        # Final result
         if limit_avg_satisfiable:
             print(f"-FINAL RESULT: Fair computation satisfying χ EXISTS!")
         else:
@@ -1561,7 +1338,6 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
         }
 
     def complete_pipeline_with_product(self, formula_psi):
-        """Complete pipeline including SCC analysis """
         print("COMPLETE PIPELINE WITH FORMAL PRODUCT CONSTRUCTION + SCC ANALYSIS")
         print("=" * 80)
         print(f"K = (P,V,S,sin,R,L) where:")
@@ -1593,7 +1369,6 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
                 if product:
                     print(f"-Formal product K × Aξ built successfully")
 
-                    # Phase 1: SCC and fairness analysis
                     phase1_result = self._check_fair_computations(product, chi)
                     phase1_results.append((chi, xi, product, phase1_result))
 
@@ -1619,7 +1394,6 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
             return None
 
     def _find_reachable_accepting_states(self, product: ProductAutomaton):
-        """Find accepting states reachable from initial states - FIXED"""
         reachable_accepting = set()
         visited = set()
 
@@ -1634,7 +1408,6 @@ class EnhancedLTLimProcessor(WSLSpotLTLimProcessor):
                 for target in product.transitions[state]:
                     dfs(target)
 
-        # Start DFS from all initial states
         for init_state in product.initial_states:
             dfs(init_state)
 

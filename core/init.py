@@ -1,6 +1,3 @@
-"""
-Core module for LTL+LimAvg Model Checker with OWL integration
-"""
 
 from QuantitativeKripkeStructure import QuantitativeKripkeStructure
 # from .ltlim_checker import LTLLimAvgChecker
