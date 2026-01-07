@@ -1,0 +1,8 @@
+{
+  "platform": "Windows with WSL",
+  "paths": {
+    "spot_script": "/home/otebook/ltl_to_nbw.py",
+    "z3_lp_script": "/home/otebook/z3_lp_solver.py",
+    "z3_python": "/home/otebook/.local/share/pipx/venvs/z3-solver/bin/python"
+  }
+}
